@@ -81,3 +81,164 @@ Sping Boot 笔记
             encoding: @project.build.sourceEncoding@
             java:
             version: @java.version@
+
+-------------------------------------------------------------------------------------------
+
+Spring常用注解
+@RestController 			构造型（stereotype）注解,告诉Spring以字符串的形式渲染结果，并直接返回给调用者
+@EnableAutoConfiguration 	这个注解告诉Spring Boot根据添加的jar依赖猜测你想如何配置Spring
+@ComponentScan 				注解自动收集所有的Spring组件，包括 @Configuration 类
+@Import 					注解可以用来导入其他配置类
+@ImportResource 			注解加载XML配置文件,有两种常用的引入方式：classpath和file，
+							例如：@ImportResource(locations={"classpath:test.xml"})  /  @ImportResource(locations={"file:d:\\test.xml"})
+@SpringBootApplication 		注解等价于以默认属性使用 @Configuration ， @EnableAutoConfiguration 和 @ComponentScan
+@ControllerAdvice			全局异常处理
+@Service					service类
+@Controller					控制层组件
+@Repository					数据访问层，即DAO层
+@Component					泛指组件，当组件不好归类是使用此注解
+@Entity						实体类
+@Transactional				添加事物
+@RequestMapping 			注解提供路由信息
+@Id							主键
+@GeneratedValue				自增
+@Resource					自动注入
+@Configuration				配置类
+@WebAppConfiguration		
+@Async						异步执行方法
+
+Junit基本注解介绍
+//在所有测试方法前执行一次，一般在其中写上整体初始化的代码
+@BeforeClass
+
+//在所有测试方法后执行一次，一般在其中写上销毁和释放资源的代码
+@AfterClass
+
+//在每个测试方法前执行，一般用来初始化方法（比如我们在测试别的方法时，类中与其他测试方法共享的值已经被改
+变，为了保证测试结果的有效性，我们会在@Before注解的方法中重置数据）
+@Before
+
+//在每个测试方法后执行，在方法执行完成后要做的事情
+@After
+
+// 测试方法执行超过1000毫秒后算超时，测试将失败
+@Test(timeout = 1000)
+
+// 测试方法期望得到的异常类，如果方法执行没有抛出指定的异常，则测试失败
+@Test(expected = Exception.class)
+
+// 执行测试时将忽略掉此方法，如果用于修饰类，则忽略整个类
+@Ignore(“not ready yet”)
+
+@Test
+@RunWith
+在JUnit中有很多个Runner，他们负责调用你的测试代码，每一个Runner都有各自的特殊功能，你要根据需要选择不同
+的Runner来运行你的测试代码。
+如果我们只是简单的做普通Java测试，不涉及Spring Web项目，你可以省略@RunWith注解，这样系统会自动使用默
+认Runner来运行你的代码。
+
+统一异常处理如下：
+1、新建一个类
+2、在class注解上@ControllerAdvice,
+3、在公共方法上注解上@ExceptionHandler(value = Exception.class)
+
+数据库的接入，大体步骤：
+1、在路径src/main/resources下创建application.properties文件
+2、在application.properties中加入datasouce的配置
+3、在pom.xml加入mysql的依赖。
+4、获取DataSouce的Connection进行测试。
+
+默认静态资源处理:
+静态资源访问优先级(静态资源默认都是在src/main/resources目录下)：META-INFO/resources > resources > static > public
+如果想要自己完全控制WebMVC，就需要在@Configuration注解的配置类上增加
+@EnableWebMvc（@SpringBootApplication 注解的程序入口类已经包含@Configuration），增加该注解以后
+WebMvcAutoConfiguration中配置就不会生效，你需要自己来配置需要的每一项
+绝对路径资源：registry.addResourceHandler("/api_files/**").addResourceLocations("file:D:/data/api_files");
+@Configuration
+public class MyWebConfiguration extends WebMvcConfigurerAdapter
+{
+
+	@Override
+	public void addResourceHandlers(ResourceHandlerRegistry registry)
+	{
+		//新增jsp资源访问路径
+		registry.addResourceHandler("/jsp/**").addResourceLocations("classpath:/jsp/");
+		super.addResourceHandlers(registry);
+	}
+	
+}
+
+普通类调用Spring bean对象：
+实现接口：ApplicationContextAware，然后加上@Component 注解即可
+/**
+ * 普通类调用Spring bean对象
+ */
+@Component
+public class TestUtil implements ApplicationContextAware
+{
+
+	private static ApplicationContext applicationContext;
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+	{
+		if (TestUtil.applicationContext == null)
+		{
+			TestUtil.applicationContext = applicationContext;
+		}
+	}
+
+	public static ApplicationContext getApplicationContext()
+	{
+		return applicationContext;
+	}
+
+	// 通过name获取Bean.
+	public static Object getBean(String name)
+	{
+		return getApplicationContext().getBean(name);
+	}
+
+	// 通过class获取Bean.
+	public static <T> T getBean(Class<T> clazz)
+	{
+		return getApplicationContext().getBean(clazz);
+	}
+
+	// 通过name,以及Clazz返回指定的Bean
+	public static <T> T getBean(String name, Class<T> clazz)
+	{
+		return getApplicationContext().getBean(name, clazz);
+	}
+
+}
+
+thymeleaf模板引擎:
+application.properties常用配置如下
+########################################################
+###THYMELEAF (ThymeleafAutoConfiguration)
+########################################################
+#spring.thymeleaf.prefix=classpath:/templates/
+#spring.thymeleaf.suffix=.html
+#spring.thymeleaf.mode=HTML5
+#spring.thymeleaf.encoding=UTF-8
+# ;charset=<encoding> is added
+#spring.thymeleaf.content-type=text/html
+# 关闭模板缓存，开发中需要关闭
+spring.thymeleaf.cache=false
+
+在spring boot中添加自己的Servlet有两种方法，代码注册Servlet和注解自动注册（Filter和Listener也是如此）:
+一、代码注册通过ServletRegistrationBean、FilterRegistrationBean 和ServletListenerRegistrationBean 获得控制;也可以通过实现ServletContextInitializer 接口直接注册。
+二、在SpringBootApplication上使用@ServletComponentScan注解后，Servlet、Filter、Listener 可以直接通过@WebServlet、@WebFilter、@WebListener 注解自动注册，无需其他代码。
+
+项目服务启动任务：
+通过实现接口CommandLineRunner来实现，可以通过@Order(value=1)注解（或者实现Order接口）来规定所有CommandLineRunner实例的运行顺序
+
+新增自动扫描包或者类，在App.java（项目启动类）类中加入如下注解：
+//可以使用：basePackageClasses={},basePackages={}
+@ComponentScan(basePackages={"cn.kfit","org.kfit"})	--如果添加了此注解那么spring boot的默认扫描路径就会失效，此时如果需要应将默认扫描路径也添加上
+
+
+
+
+
