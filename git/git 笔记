@@ -1,0 +1,85 @@
+git笔记
+
+1、新增远程仓库
+	(1)删除已有的远程仓库，如果没有则跳过：git remote rm origin
+	(2)增加远程仓库：git remote add origin xxxxx.git
+
+2、clone指定的分支到本地
+	git clone xxx.git -b 分支名称
+
+3、命令查看远程仓库地址
+	git remote -v 
+
+4、初始化
+	git init
+
+5、增加为GIT跟踪文件
+	git add .	//添加所有文件
+	git add file	//添加指定的文件
+	git rm file --cached	//从索引中删除该文件
+	git rm file 	//彻底从本地将该文件上删除
+
+6、查看当前修改的文件
+	git status
+
+7、提交
+	git commit -m ‘提交信息’
+	修改最后一次提交的信息
+	git commit --amend -m “提交信息”
+
+8、撤销当前修改
+	某一个文件（包括删除的文件）
+		git checkout HEAD -- 文件名（含后缀）
+	所有文件
+		git checkout ./
+	若撤销所有修改，使工作树干净
+		git clean –dxf
+
+9、切换本地已有分支
+	git checkout 本地已有分支名称
+
+10、基于本地已有分支创建分支
+	git branch 新建分支名称 本地已有分支名称
+
+11、基于远端库分支创建分支并转到新分支上
+	首先将远端库的地址添加到本地（只需添加一次）
+		git remote add origin 远端库地址
+
+12、获取远端库分支到本地
+	git fetch 远端库名称
+
+13、删除分支
+	删除本地分支git checkout -d 分支名称
+	删除远端库分支（将一个空的分支推送给远端要删除的分支）
+		git push origin :分支名或者git push 远端库名称 --delete 分支名
+
+14、正常推送
+	git push origin 分支名称:分支名称
+
+15、强制推送
+	git push -f origin 分支名称:分支名称
+
+16、重置与上级库完全一致
+	首先将远端库的地址添加到本地（只需添加一次）
+		git remote add 远端库名称 远端库地址
+	然后获取远端库分支到本地并重置
+		git fetch 远端库名称
+		git reset --hard 远端库名称/合入项目组的目的分支
+
+17、cherry-pick
+	将某一提交点的修改拿到当前分支上：git cherry-pick 哈希值
+
+18、查看历史修改的日志
+	git log
+
+19、拉取代码
+	拉取指定分支代码
+		git pull origin develop
+	拉取所有分支代码
+		git pull
+
+20、查询本地提交的代码和最后一次提交的代码的不同
+	git diff HEAD
+
+21、查看远程所有分支
+	git branch -r / -a
