@@ -661,6 +661,17 @@ spring cloud 实战笔记
                 {branch}: GIT 的分支，如果不写则默认为 master 分支
         9、启动 config-server 服务，访问 http://localhost:8083/config-v1.0/simple-service-foo-dev.properties
             则可以访问到 config-v1.0 分支中 simple-service-foo-dev.properties 配置文件的属性
-    2、编写 config client
+    2、本地配置文件
+        application.yml 添加以下配置属性
+            spring: 
+                profiles:
+                    active: native # 使用本地配置文件
+                cloud:
+                    config:
+                        server:
+                            native:
+                                search-locations: file:///${user.dir}/configurations/   # 本地配置文件存储位置
+            在Windows中，如果文件URL为绝对驱动器前缀，例如 file:///${user.home}/config-repo，则需要额外的“/”。
+    3、编写 config client
         
         

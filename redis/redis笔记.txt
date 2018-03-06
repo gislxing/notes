@@ -83,7 +83,7 @@ Redis 学习笔记
                 获取某个hash中全部的filed及value
         3、lists类型及操作
             list是一个链表结构，Redis的list类型其实就是一个每个子元素都是string类型的双向链表。链表的最大长度是(2的32次方)
-            1、 lpush
+            1、lpush
                 在key对应list的头部添加字符串元素
             2、rpush
                 在key对应list的尾部添加字符串元素
@@ -91,9 +91,9 @@ Redis 学习笔记
                 在key对应list的特定位置之前或之后添加字符串元素
             4、lset
                 设置list中指定下标的元素值(下标从0开始)
-            5、 lrem
+            5、lrem
                 从key对应list中删除count个和value相同的元素（count>0 时，按从头到尾的顺序删除；count<0 时，按从尾到头的顺序删除；count=0 时，删除全部）
-            6、 ltrim
+            6、ltrim
                 保留指定 key 的值范围内的数据
             7、lpop
                 从list的头部删除元素，并返回删除元素
