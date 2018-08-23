@@ -5939,13 +5939,13 @@ IPv6是下一版本的互联网协议，也可以说是下一代互联网的协�
 
 在Go的`net`包中定义了很多类型、函数和方法用来网络编程，其中IP的定义如下：
 
-```
+```go
 type IP []byte
 ```
 
-在`net`包中有很多函数来操作IP，但是其中比较有用的也就几个，其中`ParseIP(s string) IP`函数会把一个IPv4或者IPv6的地址转化成IP类型，请看下面的例子:
+在`net`包中有很多函数来操作`IP`，但是其中比较有用的也就几个，其中`ParseIP(s string) IP`函数会把一个`IPv4`或者`IPv6`的地址转化成`IP`类型，请看下面的例子:
 
-```
+```go
 package main
 import (
     "net"
@@ -5968,24 +5968,22 @@ func main() {
 }
 ```
 
-执行之后你就会发现只要你输入一个IP地址就会给出相应的IP格式
+#### TCP Socket
 
-## TCP Socket
-
-当我们知道如何通过网络端口访问一个服务时，那么我们能够做什么呢？作为客户端来说，我们可以通过向远端某台机器的的某个网络端口发送一个请求，然后得到在机器的此端口上监听的服务反馈的信息。作为服务端，我们需要把服务绑定到某个指定端口，并且在此端口上监听，当有客户端来访问时能够读取信息并且写入反馈信息。
+通过向远端某台机器的的某个网络端口发送一个请求，然后得到在机器的此端口上监听的服务反馈的信息。作为服务端，我们需要把服务绑定到某个指定端口，并且在此端口上监听，当有客户端来访问时能够读取信息并且写入反馈信息
 
 在Go语言的`net`包中有一个类型`TCPConn`，这个类型可以用来作为客户端和服务器端交互的通道，他有两个主要的函数：
 
-```
+```go
 func (c *TCPConn) Write(b []byte) (n int, err os.Error)
 func (c *TCPConn) Read(b []byte) (n int, err os.Error)
 ```
 
-`TCPConn`可以用在客户端和服务器端来读写数据。
+`TCPConn`可以用在客户端和服务器端来读写数据
 
 还有我们需要知道一个`TCPAddr`类型，他表示一个TCP的地址信息，他的定义如下：
 
-```
+```go
 type TCPAddr struct {
     IP IP
     Port int
@@ -5994,14 +5992,14 @@ type TCPAddr struct {
 
 在Go语言中通过`ResolveTCPAddr`获取一个`TCPAddr`
 
-```
+```go
 func ResolveTCPAddr(net, addr string) (*TCPAddr, os.Error)
 ```
 
 - net参数是"tcp4"、"tcp6"、"tcp"中的任意一个，分别表示TCP(IPv4-only),TCP(IPv6-only)或者TCP(IPv4,IPv6的任意一个).
 - addr表示域名或者IP地址，例如"www.google.com:80" 或者"127.0.0.1:22".
 
-### TCP client
+##### TCP client
 
 Go语言中通过net包中的`DialTCP`函数来建立一个TCP连接，并返回一个`TCPConn`类型的对象，当连接建立时服务器端也创建一个同类型的对象，此时客户端和服务器段通过各自拥有的`TCPConn`对象来进行数据交换。一般而言，客户端通过`TCPConn`对象将请求信息发送到服务器端，读取服务器端响应的信息。服务器端读取并解析来自客户端的请求，并返回应答信息，这个连接只有当任一端关闭了连接之后才失效，不然这连接可以一直在使用。建立连接的函数定义如下：
 
