@@ -415,7 +415,7 @@ func main(){
 
 `defer`关键字用于定义延迟调用的函数，`defer`定义的延迟调用时在当前方法结束前调用
 
-多个`defer`的延迟调用按照`FILO`（先入后出）顺序执行
+​                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         多个`defer`的延迟调用按照`FILO`（先入后出）顺序执行
 
 常用于处理：资源释放、解除锁定、错误处理等
 
@@ -553,7 +553,7 @@ d := [...]int{1, 2, 3, 4}	// 编译器按照初始值长度确定数组长度
 
 `len()`和`cap()`返回数组长度，在多维数组中只返回第一维度长度
 
-如果数字元素支持`==`和`!=`操作符，那么该数组也支持这两个操作符（此时将比较数组中每个元素）
+如果数组元素支持`==`和`!=`操作符，那么该数组也支持这两个操作符（此时将比较数组中每个元素）
 
 ```go
 a := [2]string{1,2}
@@ -678,7 +678,118 @@ type user struct {
 }
 ```
 
+## 方法
 
+`方法`是与对象实例绑定的特殊函数，不支持重载
+
+```go
+type N int
+
+func (n N) toString() string {
+    return fmt.Sprintf("%#x", n)
+}
+```
+
+如果方法内部不引用实例，则可省略实例接收参数名称
+
+```go
+func (N) test() {
+    fmt.Println("hhh")
+}
+```
+
+## 接口
+
+接口是一种调用规则，是多个方法声明的集合
+
+实现接口：只要目标类型方法集内包含接口声明的全部方法
+
+接口的零值是nil，如果实现接口的类型所有字段支持相等运算，那么该类型支持相等比较
+
+```go
+type interTest interface {
+    test()
+    string() string
+}
+
+type test interface {
+    interTest,		// 嵌入其他接口
+    equals() bool,
+}
+
+// 空接口，任何类型对象都可赋值给它
+type nilInterface interface {}
+```
+
+## 并发
+
+go语言的并发像是一个线程和协程的综合体
+
+```go
+go println("Hello World")
+```
+
+`runtime.Gosched()` 暂停当前线程，释放线程去执行其他任务
+
+`runtime.Goexit()`立即终止当前任务，在`main.main`中调用，则会等待其他所有线程执行完成然后崩溃
+
+`cap` 和 `len` 返回缓冲区大小和已缓冲数量，同步通道则都返回0，可根据此来判定是同步还是异步通道
+
+```go
+// 创建异步通道，10为缓冲区大小
+done := make(chan int, 10)
+
+// 创建同步通道，同步通道没有缓冲区
+c := make(chan int)
+```
+
+重复关闭或者关闭`nil`通道将引发`panic`错误，`close`不能用于接收通道
+
+通道默认是双向的，可使用类型转换获得单向通道
+
+```go
+// 创建双向通道
+var c = make(chan int)
+// 定义发送通道
+var send chan<- int = c
+// 定义接受通道
+var recv <-chan int = c
+```
+
+如果有多个通道，则可使用`select`语句随机从多个通道中选择一个可用通道接收或者发送，当所有通道都不可用时，`select`会执行`default`语句，避免`select`阻塞，
+
+```go
+a, b := make(chan int)
+x := int
+
+// 随机选择可用通道接收数据
+select {
+    case x = <- a:
+    	println(x)
+    case x = <- b:
+    	println(x)
+}
+
+
+// 随机选择发送通道
+select {
+    case a <- 1:
+    case b <- 2:
+}
+
+for {
+    select {
+        case x = <- a:
+            println(x)
+        case x = <- b:
+            println(x)
+        default:		// 避免 select 阻塞
+    }
+    
+    // 避免陷入空耗
+    time.Sleep(time.Second)
+}
+```
 
 
 
