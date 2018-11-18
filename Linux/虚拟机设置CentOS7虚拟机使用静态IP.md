@@ -55,3 +55,4 @@ DNS2=223.5.5.5#dns服器2
 
 
 第四步：重启网卡服务，执行service network restart，然后总算能上网了
+

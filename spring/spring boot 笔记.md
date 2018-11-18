@@ -1,4 +1,4 @@
-Sping Boot 笔记
+#Sping Boot 笔记
 
 1、通过访问start.spring.io可以生成初始springBoot项目
 
@@ -15,16 +15,16 @@ Sping Boot 笔记
 4、配置文件application.properties使用随机数
     // 随机字符串
     1、com.port=${random.value}
-
+    
     // 随机long
     2、com.value=${random.long}
-
+    
     // 随机int
     3、com.a=${random.int}
-
+    
     // 10以内随机数
     4、com.b=${random.int(10)}
-
+    
     // 10-20的随机数
     4、com.c=${random.int[10, 20]}
 
@@ -43,15 +43,15 @@ Sping Boot 笔记
 8、集成mybatis（Mysql）
     1、引入依赖文件
         <dependency>
-			<groupId>org.mybatis.spring.boot</groupId>
-			<artifactId>mybatis-spring-boot-starter</artifactId>
-			<version>1.3.1</version>
-		</dependency>
+    		<groupId>org.mybatis.spring.boot</groupId>
+    		<artifactId>mybatis-spring-boot-starter</artifactId>
+    		<version>1.3.1</version>
+    	</dependency>
         <dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<scope>runtime</scope>
-		</dependency>
+    		<groupId>mysql</groupId>
+    		<artifactId>mysql-connector-java</artifactId>
+    		<scope>runtime</scope>
+    	</dependency>
     2、application.yml中添加以下配置
         spring:
             datasource:
@@ -82,7 +82,7 @@ Sping Boot 笔记
             java:
             version: @java.version@
 
-10、错误页面
+10、统一错误页面跳转
     Spring Boot自动配置的默认错误处理器会查找名为 error 的视图，如果找不到就用默认的白标错误视图
     因此，自定义自己的错误页面最简单的方法就是创建一个自定义视图，让解析出的视图名为 error，
     但是如果是使用了模板，则只需要创建 error.html（Thymeleaf模板）/error.ftl（freemarker模板）/error.jsp（jsp模板）等文件并放在 templates 根目录
@@ -95,6 +95,29 @@ Sping Boot 笔记
         errors：BindingResult异常里的各种错误（如果这个错误是由异常引起的）。
         trace：异常跟踪信息（如果这个错误是由异常引起的）。
         path：错误发生时请求的URL路径。
+    发生错误后跳转到错误页面(以下的错误页面在/resources/templates/error)
+        @Controller
+        public class GlobalErrorController implements ErrorController {
+            @GetMapping(value = "/error")
+            public String defaultBadRequest(Map<String, Object> map) {
+                // 此处加入自己的错误处理，或者给错误页面传递参数
+                return "/error/404";
+            }
+            @Override
+            public String getErrorPath() {
+                // 错误页面路径
+                return "/error";
+            }
+            // 获取当前请求的错误状态码，可根据此错误码跳转到不同的错误页面
+            public static int getResponseStatus() {
+                RequestContext ctx = RequestContext.getCurrentContext();
+                HttpServletResponse response = ctx.getResponse();
+                if (response == null) {
+                    return HttpStatus.NOT_FOUND.value();
+                }
+                return response.getStatus();
+            }
+        }
 
 11、为 Actuator 添加自定义度量信息
     1、将 CounterService 和 GaugeService 注入到我们需要的 bean 中，更新/增加需要的度量值
@@ -109,6 +132,61 @@ Sping Boot 笔记
     2、添加访问权限
         .antMatchers("/mgmt/**").access("hasRole('ADMIN')")
 
+14、统一异常处理
+    @ControllerAdvice 注解给所有的 controller 加上额外的处理逻辑
+    @ControllerAdvice
+    public class GlobalExceptionHandler {
+        @ExceptionHandler(value = Exception.class)
+        public ModelAndView defaultErrorHandler(HttpServletRequest req, Exception e) throws Exception {
+            // 或者此处自定义自己的处理逻辑，返回值类型自定义
+            ModelAndView modelAndView = new ModelAndView();
+            modelAndView.addObject("notFound", "404");
+            modelAndView.setViewName("要跳转到的错误页面路径");
+            return modelAndView;
+        }
+    }
+
+15、日志处理
+    在 resources 根目录下创建 logback 配置文件：logback-spring.xml，大致配置如下所示：
+    <?xml version="1.0" encoding="UTF-8"?>
+    <configuration scan="true" scanPeriod="60 seconds" debug="false">
+        <!--输出到控制台 ConsoleAppender-->
+        <appender name="consoleLog" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <charset>UTF-8</charset>
+                <pattern>%d [%thread] %-5level %logger{36} %line - %msg%n</pattern>
+            </encoder>
+        </appender>
+        <appender name="fileInfoLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <File>/var/log/exchange/gatewayZuul.log</File>
+            <!--滚动策略，按照时间滚动 TimeBasedRollingPolicy-->
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <!--文件路径,定义了日志的切分方式——把每一天的日志归档到一个文件中,以防止日志填满整个磁盘空间-->
+                <FileNamePattern>/var/log/exchange/gatewayZuul-%d{yyyy-MM-dd}.%i.log.zip</FileNamePattern>
+                <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                    <!-- 超过最大值，会重新建一个压缩文件-->
+                    <maxFileSize>64 MB</maxFileSize>
+                </timeBasedFileNamingAndTriggeringPolicy>
+                <!--只保留最近365天的日志-->
+                <maxHistory>365</maxHistory>
+                <!--用来指定日志文件的上限大小，那么到了这个值，就会删除旧的日志-->
+                <totalSizeCap>10GB</totalSizeCap>
+            </rollingPolicy>
+            <!--日志输出编码格式化-->
+            <encoder>
+                <charset>UTF-8</charset>
+                <pattern>%d [%thread] %-5level %logger{36} %line - %msg%n</pattern>
+            </encoder>
+        </appender>
+        <!--level：指定包日志级别，如果不指定则继承root的日志级别-->
+        <logger name="com.bihang.exchange" level="info" />
+        <!--指定最基础的日志输出级别-->
+        <root level="info">
+            <!--appender将会添加到这个loger-->
+            <appender-ref ref="fileInfoLog"/>
+            <appender-ref ref="consoleLog"/>
+        </root>
+    </configuration>
 
 -------------------------------------------------------------------------------------------
 
@@ -135,7 +213,6 @@ Spring常用注解
 @WebAppConfiguration		
 @Async						异步执行方法
 @ConfigurationProperties    属性注解（该Bean的属性通过setter方法从配置属性值注入）
-
 
 -------------------------------------------------------------------------------------------
 
@@ -198,7 +275,7 @@ public class MyWebConfiguration extends WebMvcConfigurerAdapter
 		registry.addResourceHandler("/jsp/**").addResourceLocations("classpath:/jsp/");
 		super.addResourceHandlers(registry);
 	}
-	
+
 }
 
 普通类调用Spring bean对象：
@@ -247,17 +324,24 @@ public class TestUtil implements ApplicationContextAware
 }
 
 thymeleaf模板引擎:
-application.properties常用配置如下
-########################################################
-###THYMELEAF (ThymeleafAutoConfiguration)
-########################################################
-#spring.thymeleaf.prefix=classpath:/templates/
-#spring.thymeleaf.suffix=.html
-#spring.thymeleaf.mode=HTML5
-#spring.thymeleaf.encoding=UTF-8
-# ;charset=<encoding> is added
-#spring.thymeleaf.content-type=text/html
-# 关闭模板缓存，开发中需要关闭
+application.properties常用配置如
+
+THYMELEAF (ThymeleafAutoConfiguration)
+
+spring.thymeleaf.prefix=classpath:/templates/
+
+spring.thymeleaf.suffix=.html
+
+spring.thymeleaf.mode=HTML5
+
+spring.thymeleaf.encoding=UTF-8
+
+ ;charset=<encoding> is added
+
+spring.thymeleaf.content-type=text/html
+
+关闭模板缓存，开发中需要关闭
+
 spring.thymeleaf.cache=false
 
 在spring boot中添加自己的Servlet有两种方法，代码注册Servlet和注解自动注册（Filter和Listener也是如此）:
