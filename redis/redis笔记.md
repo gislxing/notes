@@ -1,17 +1,28 @@
-Redis 学习笔记
-    1、Linux 安装
-        1、将redis安装包解压到安装目录
-        2、进入 redis 目录，输入 make
-        3、进入 redis/src 目录，输入 ./redis-server 启动 redis 服务
-        4、将 Redis 作为 Linux 服务开机启动
-            vi /etc/rc.local
-            在文件最后加入下面一行代码
-                redis存放路径/redis-4.0.7/src/redis-server
-        5、进入 redis 客户端，所有命令都只能在客户端对 redis 操作
-            redis存放路径/redis-4.0.7/src/redis-cli
-    2、总体概念
-        1、每个命令都相对应于一种特定的数据结构。例如，当你使用set命令，你就是将值存储到一个字符串数据结构里
+### Redis 学习笔记
 
+#### 1. Linux 安装
+
+```bash
+$ wget http://download.redis.io/releases/redis-5.0.3.tar.gz
+$ tar xzf redis-5.0.3.tar.gz
+$ cd redis-5.0.3
+$ make MALLOC=libc
+
+# 启动redis, 进入redis目录
+$ ./src/redis-server
+
+# 进入 redis 客户端，所有命令都只能在客户端对 redis 操作, 进入redis目录
+$ ./src/redis-cli
+```
+
+注意：
+
+  		1. 报错 `/bin/sh: 1: cc: not found`则需要安装 `gcc`  : `sudo apt install gcc`
+
+#### 2. 总体概念
+
+       1、每个命令都相对应于一种特定的数据结构。例如，当你使用set命令，你就是将值存储到一个字符串数据结构里
+    
     3、存储器和持久化
         默认情况下，如果1000个或更多的关键字已变更，Redis会每隔60秒存储数据库；而如果9个或更少的关键字已变更，Redis会每隔15分钟存储数据库
     4、数据类型及常用操作
