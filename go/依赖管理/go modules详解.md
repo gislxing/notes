@@ -267,6 +267,14 @@ The commands are:
 	why         explain why packages or modules are needed (解释为什么需要依赖)
 ```
 
+## 替换来源
+如果下载不下来某些包，则使用以下方式替换下载来源，在 go.mod 中添加以下代码
+```
+replace (
+    golang.org/x/text => github.com/golang/text v0.3.0
+)
+```
+
 ## 总结
 
 go 团队表示，在 go 1.12 之前，这个特性都将会处于实验性阶段，go 团队会努力保持兼容性。一旦模块稳定之后，对 GOPATH 的支持将会被移除掉。
