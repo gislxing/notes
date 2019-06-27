@@ -29,7 +29,7 @@ sudo usermod -aG docker 用户名
 或者使用下列命令：
 
 1. 创建`docker`用户组：`sudo groupadd docker`
-2. 将当前用户添加到上面的用户组中: `sudo glassed -a 用户名 docker`
+2. 将当前用户添加到上面的用户组中: `sudo gpsswd -a 用户名 docker`
 3. 重新启动`docker`服务: `sudo service docker restart`
 
 如果没有安装`curl`需要安装
@@ -102,6 +102,9 @@ docker start [-i] id/容器名称
 
 ```bash
 docker rm id/容器名称
+
+# 批量删除容器
+docker rm $(docker ps -a -q)
 ```
 
 ### 查看容器的端口
@@ -253,10 +256,13 @@ docker images [options][仓库名称]
 ### 删除镜像
 
 ```bash
-docker rmi [options]镜像:tag[镜像:tag...]
+$ docker rmi [options]镜像:tag[镜像:tag...]
 # options取值如下:
 # 	-f 强制删除镜像
 # 	--no-prune 不删除未打tag的父镜像	
+
+# 批量删除镜像
+$ docker rmi $(docker images -q -a)
 ```
 
 ## 获取和推送镜像
@@ -322,7 +328,35 @@ Options:
 
 ### 使用Dockerfile文件构建镜像
 
-```bash
+1. 创建Dockerfile文件
 
+```bash
+# 1.在Dockerfile存放目录创建文件
+$ vim Dockerfile
+
+# 2.输入以下内容
+
+# first Dockerfile for test
+
+from ubuntu:18.04
+maintainer zbs "zbs1016@163.com"
+run apt-get update
+run apt-get install -y nginx
+expose 80
+```
+
+2. 构建镜像
+
+```bash
+# 使用 docker build 命令构建镜像
+$ docker build [OPTIONS] PATH | URL | -
+	--force-rm                始终移除中间容器
+	--no-cache                构建镜像的时候不使用缓存
+	--pull                    尝试拉取镜像的最新版本
+	-q, --quiet               构建过程中不输出，在构建成功的时候输出镜像ID
+	--rm                      构建成功后删除中间容器(default true)
+	-t, --tag list            指定构建出的镜像的名称
+# 例如(在当前目录构建镜像)
+$ docker build -t="df-test" .
 ```
 
