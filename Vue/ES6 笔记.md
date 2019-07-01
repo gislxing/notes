@@ -1,29 +1,6 @@
 # ES6 笔记
 
-## 1.ES6怎么来的
-
-- ECMAScript 和 JavaScript
-  - ECMA 是标准，JS 是实现
-  - ECMAScript 简称 ECMA 或 ES
-- 历史版本
-  - 1996, ES1.0 Netscape 将 JS 提交给 ECMA 组织，ES 正式出现
-  - 1999, ES3.0 被广泛支持
-  - 2011, ES5.1 成为 ISO 国际标准
-  - 2015, ES6.0 正式发布
-
-## 2.ES6兼容性
-
-- ES6(ES2015) 支持的环境 IE10+, Chrome, FireFox, 移动端, NodeJS
-- 解决不兼容办法，编译、转换
-  - 在线转换
-  - 或者提前编译
-- [Babel 中文网](https://www.babeljs.cn/)
-  - [Babel 入门教程 阮一峰](http://www.ruanyifeng.com/blog/2016/01/babel.html)
-  - Babel 是一个 JavaScript 编译器
-  - 一个广泛使用的转码器，可以将ES6代码转为ES5代码，从而在现有环境执行
-  - 现在就用 ES6 编写程序，而不用担心现有环境是否支持
-
-## 3.变量 let 和 常量 const
+## 变量 let 和 常量 const
 
 - var 的问题
   - 可以重复声明，没有报错和警告
@@ -39,7 +16,7 @@
   - 或者将变量 封装到函数里，限制作用域，但比较麻烦
   - 用 let 最简单，直接 var 改 let，解决作用域问题
 
-```
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -83,13 +60,13 @@
 </html>
 ```
 
-## 4.函数-箭头函数
+## 函数-箭头函数
 
 - 箭头函数，就是函数的简写
   - 如果只有一个参数，`()` 可以省
   - 如果只有一个`return`，`{}`可以省
 
-```
+```js
 // 普通函数
 function name() {
 
@@ -119,11 +96,9 @@ console.log(show4(10))
 console.log(show5(10))
 ```
 
-## 5.函数-参数
+## 函数-参数
 
 - 参数扩展／展开
-
-   
 
   ```
   ...args
@@ -134,7 +109,7 @@ console.log(show5(10))
 
 - 默认参数
 
-```
+```js
 function show(a, b, ...args) {
     console.log(a)
     console.log(b)
@@ -153,9 +128,9 @@ function show2(a, b=5, c=8) {
 show2(88, 12)
 ```
 
-## 6.解构赋值
+## 解构赋值
 
-```
+```js
 let [a, b, c] = [1, 2, 3]
 console.log(a, b, c)
 
@@ -168,15 +143,15 @@ console.log(json, arr, num, str)
 
 - 解构赋值
   - 左右两个边结构必须一样
-  - 右边必须是个东西
-  - 声明和赋值赋值不能分开，必须在一句话里
+  - 右边必须是合法的语法
+  - 声明和赋值赋值不能分开，必须在一条语句中
 
-## 7.数组
+## 数组
 
 - 新增4个方法
 - map 映射 一个对一个
 
-```
+```js
 let arr = [12, 5, 8]
 let result = arr.map(function (item) {
     return item*2
@@ -198,7 +173,7 @@ console.log(result3)
 - reduce 汇总 一堆出来一个
   - 用于比如，算个总数，算个平均
 
-```
+```js
 var arr = [1, 3, 5, 7]
 var result = arr.reduce(function (tmp, item, index) {
     //tmp 上次结果，item当前数，index次数1开始
@@ -220,7 +195,7 @@ console.log(result)  // 平均值
 
 - filter 过滤器 保留为true的
 
-```
+```js
 var arr = [12, 4, 8, 9]
 var result = arr.filter(item => (item % 3 === 0) ? true : false)
 console.log(result)
@@ -237,19 +212,19 @@ console.log(result)
 
 - forEach 循环迭代
 
-```
+```js
 var arr = [12, 4, 8, 9]
 var result = arr.forEach(item => console.log(item))
 var result = arr.forEach((item, index)=>console.log(item, index))
 ```
 
-## 8.字符串
+## 字符串
 
 - 多了两个新方法
   - `startsWith`
   - `endsWith`
 
-```
+```js
 var url = 'http://qq.com'
 console.log(url.startsWith('http'))
 console.log(url.endsWith('com'))
@@ -260,7 +235,7 @@ console.log(url.endsWith('com'))
   - 使用反引号，`${变量}`
   - 可以折行
 
-```
+```js
 let a = 12
 let str1 = `asdf${a}`
 console.log(str1)
@@ -277,13 +252,13 @@ console.log(str)
 <p>内容</p>
 ```
 
-## 9.面向对象-基础
+## 面向对象-基础
 
 - 原来写法
   - 类和构造函数一样
   - 属性和方法分开写的
 
-```
+```js
 // 老版本
 function User(name, pass) {
     this.name = name
@@ -321,7 +296,7 @@ v1.showLevel()
   - class 里面直接加方法
   - 继承，super 超类==父类
 
-```
+```js
 class User {
     constructor(name, pass) {
         this.name = name
@@ -355,14 +330,14 @@ v1 = new VipUser('blue', '123', 3)
 v1.showLevel()
 ```
 
-## 10.面向对象应用
+## 面向对象应用
 
 - React
   - 用于构建用户界面的 JavaScript 库
   - 组件化，一个组件就是一个 class
   - JSX == bable == browser.js
 
-## 11.json
+## json
 
 - JSON 格式
   - JavaScript Object Notation 的缩写，是一种用于数据交换的文本格式
@@ -375,7 +350,7 @@ v1.showLevel()
   - JSON.parse(string) ：接受一个 **JSON 字符串**并将其转换成一个 JavaScript **对象**。
   - JSON.stringify(obj) ：接受一个 JavaScript **对象**并将其转换为一个 **JSON 字符串**。
 
-```
+```js
 var json = {a: 12, b: 5}
 var str = 'hi,' + JSON.stringify(json)
 var url = 'http://www.xx.com/' + encodeURIComponent(JSON.stringify(json))
@@ -403,7 +378,7 @@ http://www.xx.com/%7B%22a%22%3A12%2C%22b%22%3A5%7D
   - key-value 一样时可以简写
   - 里面函数可以简写, 去掉
 
-```
+```js
 var a = 12, b = 5
 console.log({a:a, b:b})
 console.log({a, b})
@@ -415,7 +390,7 @@ console.log({ a, b, show(){ console.log('a') }})
 { a: 12, b: 5, show: [Function: show] }
 ```
 
-## 12.Promise
+## Promise
 
 - 异步和同步
   - 异步，操作之间没有关系，同时执行多个操作， 代码复杂
@@ -429,9 +404,9 @@ console.log({ a, b, show(){ console.log('a') }})
   - 接受一个回调函数f1作为参数，f1里面是异步操作的代码
   - 返回的p1就是一个 Promise 实例
   - 所有异步任务都返回一个 Promise 实例
-  - Promise 实例有一个then方法，用来指定下一步的回调函数
+  - Promise 实例只有一个then方法，用来指定下一步的回调函数，then 方法可以返回一个 Promise 对象
 
-```
+```js
 function f1(resolve, reject) {
   // 异步代码...
 }
@@ -441,7 +416,7 @@ p1.then(f2); // f1的异步操作执行完成，就会执行f2。
 
 - Promise 使得异步流程可以写成同步流程
 
-```
+```js
 // 传统写法
 step1(function (value1) {
   step2(value1, function(value2) {
@@ -460,13 +435,30 @@ step1(function (value1) {
   .then(step4);
 ```
 
-- Promise.all(promiseArray)方法
-  - 将多个Promise对象实例包装，生成并返回一个新的Promise实例
-  - promise数组中所有的promise实例都变为resolve的时候，该方法才会返回
+- 异常处理
+
+  当执行 `resolve`的回调（也就是回掉成功时执行的函数）时，如果抛出异常了，那么也不会报错卡死 js，而是会进到这个`catch`方法中
+```js
+somePromise.then(function() {
+	return a();
+}).catch(TypeError, function(e) {
+ //If a is defined, will end up here because
+ //it is a type error to reference property of undefined
+}).catch(ReferenceError, function(e) {
+ //Will end up here if a wasn't defined at all
+}).catch(function(e) {
+ //Generic catch-the rest, error wasn't TypeError nor
+ //ReferenceError
+});
+```
+
+- `Promise.all(promiseArray)`方法
+  - 将多个`Promise`对象实例包装，生成并返回一个新的`Promise`实例
+  - `promise`数组中所有的`promise`实例都变为`resolve`的时候，该方法才会返回
   - 并将所有结果传递results数组中
   - promise数组中任何一个promise为reject的话，则整个Promise.all调用会立即终止，并返回一个reject的新的promise对象
 
-```
+```js
 var p1 = Promise.resolve(1),
     p2 = Promise.resolve(2),
     p3 = Promise.resolve(3);
@@ -475,12 +467,13 @@ Promise.all([p1, p2, p3]).then(function (results) {
 });
 ```
 
-- Promise.race([p1, p2, p3])
-  - Promse.race就是赛跑的意思
-  - 哪个结果获得的快，就返回那个结果
-  - 不管结果本身是成功状态还是失败状态
+- `Promise.race([p1, p2, p3])`
+  
+  race 按字面解释，就是赛跑的意思。race 的用法与 all 一样，只不过 all 是等所有异步操作都执行完毕后才执行 then 回调。而 race 的话只要有一个异步操作执行完毕，就立刻执行 then 回调。
+  
+  注意：其它没有执行完毕的异步操作仍然会继续执行，而不是停止。
 
-## 13.generator-认识生成器函数
+## generator-生成器函数
 
 - generator 生成器函数
   - 普通函数，一路到底
@@ -490,7 +483,7 @@ Promise.all([p1, p2, p3]).then(function (results) {
   - generator函数前面加一个 `*` 两边可以有空格，或靠近函数或`function`
   - 背后实际生成多个小函数，实现走走停停
 
-```
+```js
 function show() {
     console.log('a')
     console.log('b')
