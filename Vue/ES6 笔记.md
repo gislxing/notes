@@ -501,7 +501,7 @@ genObj.next() // 2
 genObj.next() // 最后了，没有结果
 ```
 
-## 14.generator-yield是啥
+## generator-yield是啥
 
 - `yield`
   - 既可传参，又可以返回
@@ -511,7 +511,7 @@ genObj.next() // 最后了，没有结果
   - 如果有`yield`会报错， `ReferenceError: yield is not defined`
   - yield 只能在Generator函数内部使用
 
-```
+```js
 function * show() {
     console.log('1')
     var a = yield
@@ -540,12 +540,12 @@ console.log(res2)
 // { value: undefined, done: true } 最后的value需要return返回
 ```
 
-## 15.generator-实例
+## generator-实例
 
 - Promise 适合一次读一组
 - generator 适合逻辑性的
 
-```
+```js
 // 带逻辑-generator
 runner(function * () {
     let userData = yield $.ajax({url: 'getUserData'})
@@ -563,7 +563,7 @@ server.use(function * () {
 })
 ```
 
-## 16.ES7 预览
+## ES7 预览
 
 - 数组
   - `arr.includes()` 数组是否包含某个东西
@@ -571,7 +571,7 @@ server.use(function * () {
   - for ... in 遍历数组 下标 key
   - for ... of 遍历数组 值 value, 不能用于json
 
-```
+```js
 let arr = ['a', 'b', 'c']
 console.log(arr.includes(1))
 
@@ -598,7 +598,7 @@ for (let i in json) {
 - 字符串
   - padStart()/padEnd() 指定宽度，不够就补空格或指定字符
 
-```
+```js
 console.log('=' + 'abcd'.padStart(6, '0') + '=')
 console.log('=' + 'abcd'.padEnd(6, '0') + '=')
 =00abcd=
@@ -612,10 +612,11 @@ console.log('=' + 'abcd'.padEnd(6, '0') + '=')
   - 和 generator yield 类似
   - generator 不可以写成箭头函数， async 可以
 
-```
+```js
 async function show() {
     console.log(1)
     await
     console.log(2)
 }
 ```
+
