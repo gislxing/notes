@@ -108,9 +108,9 @@ var app3 = new Vue({
 
 ### v-else
 
-不需要表达式，前一兄弟元素必须有 `v-if` 或 `v-else-if`，且必须紧挨着
+不需要表达式，前一兄弟元素必须有 `v-if` 或 `v-else-if`
 
-为 `v-if` 或者 `v-else-if` 添加“else 块”。
+`v-else` 元素必须紧跟在带 `v-if` 或者 `v-else-if` 的元素的后面，否则它将不会被识别
 
 ```html
 <div v-if="Math.random() > 0.5">
@@ -608,3 +608,180 @@ data: {
 ```
 
 ## 条件渲染
+
+### 用 `key` 管理可复用的元素
+
+Vue 会尽可能高效地渲染元素，通常会复用已有元素而不是从头开始渲染
+
+```html
+<template v-if="loginType === 'username'">
+  <label>Username</label>
+  <input placeholder="Enter your username">
+</template>
+<template v-else>
+  <label>Email</label>
+  <input placeholder="Enter your email address">
+</template>
+```
+
+那么在上面的代码中切换 `loginType` 将不会清除用户已经输入的内容。因为两个模板使用了相同的元素，`<input>` 不会被替换掉——仅仅是替换了它的 `placeholder`
+
+需要替换掉原有的元素，则添加一个具有唯一值的 `key` 属性即可，`key`保证多个相同的元素完全独立
+
+```html
+<template v-if="loginType === 'username'">
+  <label>Username</label>
+  <input placeholder="Enter your username" key="username-input">
+</template>
+<template v-else>
+  <label>Email</label>
+  <input placeholder="Enter your email address" key="email-input">
+</template>
+```
+
+## 列表渲染
+
+建议尽可能在使用 `v-for` 时提供 `key` attribute
+
+### 用 `v-for` 把数组对应为一组元素
+
+我们可以用 `v-for` 指令把一个数组渲染为一个列表。`v-for` 指令需要使用 `item in items` 形式的特殊语法，其中 `items` 是源数据数组，而 `item` 则是被迭代的数组元素的**别名**。
+
+```html
+<ul id="example-1">
+  <li v-for="item in items">
+    {{ item.message }}
+  </li>
+</ul>
+```
+
+```js
+var example1 = new Vue({
+  el: '#example-1',
+  data: {
+    items: [
+      { message: 'Foo' },
+      { message: 'Bar' }
+    ]
+  }
+})
+```
+
+`v-for` 还支持可选的第二个参数，即当前项的索引
+
+```html
+<ul id="example-2">
+  <li v-for="(item, index) in items">
+    {{ index }} - {{ item.message }}
+  </li>
+</ul>
+```
+
+你也可以用 `of` 替代 `in` 作为分隔符
+
+```html
+<div v-for="item of items"></div>
+```
+
+### 在 `v-for` 里使用对象
+
+你也可以用 `v-for` 来遍历一个对象的属性。
+
+```html
+<ul id="v-for-object" class="demo">
+  <li v-for="value in object">
+    {{ value }}
+  </li>
+</ul>
+```
+
+```js
+new Vue({
+  el: '#v-for-object',
+  data: {
+    object: {
+      title: 'How to do lists in Vue',
+      author: 'Jane Doe',
+      publishedAt: '2016-04-10'
+    }
+  }
+})
+```
+
+第二个参数为 property 名称 (也就是键名)：
+
+```html
+<div v-for="(value, name) in object">
+  {{ name }}: {{ value }}
+</div>
+```
+
+第三个参数为索引：
+
+```html
+<div v-for="(value, name, index) in object">
+  {{ index }}. {{ name }}: {{ value }}
+</div>
+```
+
+### 数组更新检测
+
+直接利用索引直接设置一个数组项时，Vue 检测不到数组变动，此时需要使用 `vm.$set` 实例方法或者`Vue.set`全局方法
+
+#### 变异方法 (mutation method)
+
+以下变异方法将会触发视图更新：
+
+- `push()`
+- `pop()`
+- `shift()`
+- `unshift()`
+- `splice()`
+- `sort()`
+- `reverse()`
+
+#### 替换数组
+
+**变异方法**会改变原始数组。非变异 (non-mutating method) 方法，例如 `filter()`、`concat()` 和 `slice()` 。它们不会改变原始数组，而**是返回一个新数组**。当使用非变异方法时，可以用新数组替换旧数组：
+
+```js
+example1.items = example1.items.filter(function (item) {
+  return item.message.match(/Foo/)
+})
+```
+
+### 对象变更检测注意事项
+
+**Vue 不能检测对象属性的添加或删除**
+
+对于已经创建的实例，Vue 不允许动态添加根级别的响应式属性。但是，可以使用 `Vue.set(object, propertyName, value)` 方法向嵌套对象添加响应式属性
+
+```js
+var vm = new Vue({
+  data: {
+    userProfile: {
+      name: 'Anika'
+    }
+  }
+})
+```
+
+添加一个新的 `age` 属性到嵌套的 `userProfile` 对象：
+
+```js
+Vue.set(vm.userProfile, 'age', 27)
+```
+
+### Template 上使用 v-for
+
+`template` 元素是 `Vue` 的标记元素，它不会渲染到页面
+
+```html
+<ul>
+  <template v-for="item in items">
+    <li>{{ item.msg }}</li>
+    <li class="divider" role="presentation"></li>
+  </template>
+</ul>
+```
+
