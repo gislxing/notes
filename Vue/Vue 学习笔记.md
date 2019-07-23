@@ -1784,3 +1784,50 @@ Vue.component('my-special-transition', {
 })
 ```
 
+## 开发环境搭建
+
+### 安装 Node
+
+### 安装 webpack
+
+```bash
+npm install -g webpack
+```
+
+### 安装 Vue-cli
+
+```bash
+npm install -g @vue/cli
+```
+
+## 创建项目
+
+```js
+// Vue 3.x 创建项目
+vue create hello-world
+
+// Vue 2.x 创建项目
+vue init webpack hello-world
+```
+
+### 项目结构
+
+```js
+|-- dist // 生成打包后文件
+|-- node_modules	// 安装的依赖包
+|-- public	// 静态资源（打包后会被复制到 dist 目录）
+|		|-- index.html	// 项目首页 html
+|-- src
+|		|-- assets	// 静态资源（图片、图标、字体等）
+|		|-- component	// Vue 组件
+|		|-- views		// 路由组件
+|		|-- App.vue	// 项目根组件
+|		|-- main.js	// 项目入口js文件
+|		|-- router.js	// 路由配置
+|-- babel.config.js
+|-- package-lock.json	// package.json 的依赖锁文件（保持依赖版本号）
+|-- package.json	// npm 依赖文件
+|-- postcss.config.js
+|-- vue.config.js		// webpack 配置文件（该文件需要手动创建，名字不能变）
+```
+
