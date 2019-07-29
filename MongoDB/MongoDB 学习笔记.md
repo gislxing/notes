@@ -255,7 +255,6 @@ db.students.insertMany([
    { name: "ximing", age: 200 }
 ])
 ```
-
 #### `db.collection.insert()`
 
 将单个文档或多个文档插入集合中
@@ -275,6 +274,8 @@ db.students.insert([
 
 ### 删除
 
+#### `db.collection.deleteMany()`
+
 删除操作不会删除索引，即使从集合中删除所有文档也是如此
 
 删除所有文档
@@ -293,7 +294,9 @@ db.students.deleteMany(
 )
 ```
 
-删除与条件匹配的一个文档`db.collection.deleteOne()`
+#### `db.collection.deleteOne()`
+
+删除与条件匹配的一个文档
 
 删除一个文档时，如果筛选条件匹配了多个结果，那么则删除`_id`排序第一个文档
 
@@ -303,7 +306,22 @@ db.students.deleteOne(
 )
 ```
 
-`db.collection.remove()` 删除单个文档或与指定过滤器匹配的所有文档
+#### `db.collection.remove()` 
+
+删除单个文档或与指定过滤器匹配的所有文档
+
+```
+db.collection.remove(
+   <query>,
+   {
+     justOne: <boolean>,
+     writeConcern: <document>,
+     collation: <document>
+   }
+)
+```
+
+`justOne` 默认值 false，删除多有匹配的文档，true 仅删除一个文档
 
 ```shell
 # 删除所有文档
@@ -313,7 +331,27 @@ db.students.remove({})
 db.students.remove({age: 100})
 
 # 删除与删除条件匹配的一个文档
-db.students.remove({age: 100}, true)
+db.students.remove({age: 100}, {justOne: true})
+```
+
+#### `db.collection.drop()`
+
+从数据库中删除集合或视图
+
+该方法还会删除与已删除集合关联的所有索引
+
+```
+db.collection.drop( { writeConcern: <document> } )
+```
+
+此方法在受影响的数据库上获取写锁定，并将阻止其他操作，直到完成为止。
+
+`db.collection.drop（）` 方法和 `drop命令` 为已删除集合上打开的任何更改流创建invalidate事件
+
+从MongoDB 4.0.2开始，删除集合将删除其关联的区域/标记范围
+
+```
+db.students.drop()
 ```
 
 ### 修改
@@ -324,7 +362,13 @@ db.students.remove({age: 100}, true)
 
 如果`updateOne()`， `updateMany()`或 `replaceOne()` 没有与指定过滤器匹配的文档，则该操作将创建一个新文档并将其插入。如果存在匹配的文档，则操作修改或替换匹配的文档。
 
-db.collection.updateOne(<filter>, <update>, <options>)
+**`_id` 字段的值是不可修改的**
+
+如果多个客户端同时发出带有 `upsert: true` 的更新相同内容的操作，则可能会导致多条语句被插入数据库，为防止这种情况，则需要给 `<filter> 加上唯一索引`
+
+使用**点表示法**更新嵌套字段或者数组中值
+
+#### `db.collection.updateOne(<filter>, <update>, <options>)`
 
 更新单个文档
 
@@ -339,7 +383,7 @@ db.students.updateOne(
 )
 ```
 
-db.collection.updateMany(<filter>, <update>, <options>)
+#### db.collection.updateMany(\<filter>, \<update>, \<options>)
 
 ```shell
 db.students.updateMany(
@@ -352,7 +396,7 @@ db.students.updateMany(
 )
 ```
 
-db.collection.replaceOne(<filter>, <update>, <options>)
+#### db.collection.replaceOne(\<filter>, \<update>, \<options>)
 
 替换一个文档中除`_id`之外的所有内容
 
@@ -365,9 +409,91 @@ db.students.replaceOne(
 )
 ```
 
-db.collection.update()
+#### `db.collection.update()`
+
+```shell
+db.collection.update(
+   <query>,
+   <update>,
+   {
+     upsert: <boolean>,
+     multi: <boolean>,
+     writeConcern: <document>,
+     collation: <document>,
+     arrayFilters: [ <filterdocument1>, ... ]
+   }
+)
+```
 
 更新或替换与指定过滤器匹配的单个文档，或更新与指定过滤器匹配的所有文档。
+
+##### 参数说明
+
+`upsert` 
+
+​	可选的。默认值为false
+
+​	true：没有文档与查询条件匹配时创建新文档。false：如果未找到匹配项，则不会插入新文档
+
+`multi` 
+
+​	可选的。默认值为false
+
+​	true: 更新符合查询条件的所有文档。false: 只更新一个文档
+
+`writeConcern`
+
+​	可选的
+
+​	`writeConcern` 描述了 `MongoDB` 请求的确认级别，用于对独立 `MongoDB` 或副本集或分片集群的写入操作。在分片群集中，mongos实例会将 `writeConcern` 传递给分片
+
+​	**注意**: 对于多文档事务，您可以在事务级别设置写入关注点，而不是在单个操作级别。不要在事务中明确设置_单个写操作_的写入问题
+
+```
+writeConcern: { w: <value>, j: <boolean>, wtimeout: <number> }
+```
+
+* w: 选项请求确认写操作已传播到指定数量的mongod实例或具有指定标记的mongod实例
+
+* j: 选项请求确认写操作已写入磁盘日志
+
+* timeout: 选项指定一个时间限制，以防止写操作无限期地阻塞
+
+`collation`
+
+​	指定要用于操作的排序规则。排序规则允许用户为字符串比较指定特定于语言的规则
+
+```
+collation: {
+   locale: <string>,
+   caseLevel: <boolean>,
+   caseFirst: <string>,
+   strength: <int>,
+   numericOrdering: <boolean>,
+   alternate: <string>,
+   maxVariable: <string>,
+   backwards: <boolean>
+}
+```
+
+`arrayFilters`
+
+​	可选的。
+
+​	一组过滤器文档，用于确定要为数组字段上的更新操作修改哪些数组元素。在更新文档中，使用`$ [<identifier>]`过滤的位置运算符来定义标识符，然后在数组过滤器文档中引用该标识符。如果标识符未包含在更新文档中，则不能有标识符的数组过滤器文档。
+
+```shell
+# 筛选出集合中 grades 数组大于等于100 的文档
+# 将大于等于 100 的 grades 数组元素修改为 100
+db.students.update(
+   { grades: { $gte: 100 } },
+   { $set: { "grades.$[element]" : 100 } },
+   {
+     multi: true,
+     arrayFilters: [ { "element": { $gte: 100 } } ]
+   }
+)
+```
 
 默认情况下，`db.collection.update()` 方法更新单个文档。要更新多个文档，请使用`multi`选项。
 
@@ -385,6 +511,17 @@ db.students.update(
 		$set: {name: "xiaohua", age: 10}
   }
 )
+
+# 修改匹配的多个文档，如果不存在则不插入
+db.students.update(
+	{name: "xiaoming"},
+	{
+		$set: {name: "xiaohua", age: 10}
+  },
+  {
+  	multi: true
+  }
+)
 ```
 
 ```shell
@@ -394,6 +531,311 @@ db.students.update(
 	{name: "xiaohua", age: 10},
 	{upsert: true}
 )
+```
+
+#### 更新操作符
+
+更新操作符可用于更新操作
+
+更新操作符语法
+
+```
+{
+   <operator1>: { <field1>: <value1>, ... },
+   <operator2>: { <field2>: <value2>, ... },
+   ...
+}
+```
+
+##### $set
+
+用指定的值替换字段的值
+
+如果修改的字段不存在，则会创建新的字段
+
+```
+{ $set: { <field1>: <value1>, ... } }
+```
+
+##### $unset
+
+删除指定字段，如果字段不存在则不执行任何操作
+
+```
+{ $unset: { <field1>: "", ... } }
+```
+
+```shell
+# 删除 age 和 love 字段
+db.students.update(
+	{name: "xiaowang"},
+	{$unset: {age: "", love: ""}}
+)
+```
+
+如果删除数组中的一个元素，则是将数组中指定的元素设置为 `null` ，而不是从数组中删除匹配元素。以保持数组大小和元素位置保持一致。
+
+```shell
+# 如果 love = ["a", "b", "c"]
+# 修改后则是: love = ["a", null, "c"]
+db.students.update(
+	{name: "xiaoming"},
+	{$unset: {"love.1": ""}}
+)
+```
+
+##### $rename
+
+`$rename` 更新字段的名称
+
+```
+{$rename: { <field1>: <newName1>, <field2>: <newName2>, ... } }
+```
+
+`$rename` 运算符在逻辑上执行旧名称和新名称的 `$unset`，然后使用新名称执行 `$set` 操作。因此，操作可能不保留文档中字段的顺序，即重命名的字段可以在文档内移动
+
+如果文档已经包含 `<newName>` 的字段，则 `$rename` 运算符将删除该字段，并将指定的 `<field>` 重命名为`<newName>`
+
+如果需要重命名的字段不存在，则不进行任何操作
+
+对于嵌套文档中的字段，`$rename` 运算符可以重命名这些字段，以及将字段移入和移出嵌入文档
+
+如果这些字段在数组元素中，则 `$rename` 不起作用
+
+```shell
+# 将 nmae 字段的名称修改为 name
+db.students.updateMany( {}, { $rename: { "nmae": "name" } } )
+```
+
+```shell
+# 如果存在下面的文档
+{
+    "_id": ObjectId("5d33b642ec904777066a9290"),
+    "name": {first: "xiao", last: "wang"},
+    "age": 444
+}
+
+# 修改 name 字段中的 first 字段的名称为 fname
+db.students.updateMany({}, {$rename: {"name.first": "name.fname"}})
+
+# 执行之后文档变成
+{
+    "_id": ObjectId("5d33b642ec904777066a9290"),
+    "name": {fname: "xiao", last: "wang"},
+    "age": 444
+}
+```
+
+```shell
+# 如果存在下面的文档
+{
+    "_id": ObjectId("5d33b642ec904777066a9290"),
+    "name": {first: "xiao", last: "wang"},
+    "age": 444,
+    "balance": 200
+}
+
+# 将 balance 字段移动到 name 字段中
+db.students.updateMany({}, {$rename: {"balance": "name.balance"}})
+
+# 执行结果
+{
+    "_id": ObjectId("5d33b642ec904777066a9290"),
+    "name": {first: "xiao", last: "wang", "balance": 200},
+    "age": 444
+}
+```
+
+##### $inc 和 \$mul
+
+`$inc`  运算符先现有的值加上指定的值，如果指定的值时负数则就是减法运算
+
+```
+注意
+1. 如果该字段不存在，$inc 将创建该字段并将该字段设置为指定值
+2. 在具有空值的字段上使用 $inc 运算符将生成错误
+3. $inc 在单个文档中是原子操作
+```
+
+`$mul` 运算符将现有的值乘以指定的数字
+
+```
+注意
+1. 如果该字段不存在，$mul 将创建该字段并将其值设置为与乘数相同的数字类型的零
+2. $inc 在单个文档中是原子操作
+```
+
+```
+{ $inc: { <field1>: <amount1>, <field2>: <amount2>, ... } }
+{ $mul: { <field1>: <number1>, ... } }
+```
+
+```shell
+db.students.update({_id: 1}, {$inc: {age: 1}})
+db.students.update({_id: 1}, {$mul: {price: 1.2}})
+```
+
+##### \$min 和 \$max
+
+`$min` 运算符将比较比较指定值与字段当前的值，如果指定的**小于**字段当前的值，则将字段的值修改为指定的值
+
+`$max` 运算符将比较比较指定值与字段当前的值，如果指定的**大于**字段当前的值，则将字段的值修改为指定的值
+
+```
+{ $min: { <field1>: <value1>, ... } }
+{ $max: { <field1>: <value1>, ... } }
+```
+
+```shell
+# 假设有下面的文档
+{ _id: 1, highScore: 800, lowScore: 200 }
+
+# 下面操作比较指定的值 100 和 字段值 200, 将最小值 100 更新到 lowScorce 字段
+# 执行结果 { _id: 1, highScore: 800, lowScore: 100 }
+db.students.update({_id: 1}, {$min: {lowScorce: 100}})
+```
+
+如果指定的字段不存在，则插入该字段并将值设置为指定的值
+
+对于不同类型之间的比较，`$min` 和 `$max` 使用 `BSON` 比较顺序
+
+```shell
+# 下面的 BSON 是从低到高的顺序
+MinKey (internal type)
+Null
+Numbers (ints, longs, doubles, decimals)
+Symbol, String
+Object
+Array
+BinData
+ObjectId
+Boolean
+Date
+Timestamp
+Regular Expression
+MaxKey (internal type)
+```
+
+#### 数组更新操作符
+
+##### $addToSet
+
+如果数组中不存在指定的值，则将该值添加到数组中
+
+```
+{ $addToSet: { <field1>: <value1>, ... } }
+```
+
+`$addToSet` 仅确保没有重复项添加到集合中，并且不会影响现有的重复元素。`$addToSet` 不保证修改集中元素的特定排序
+
+如果在不是数组的字段上使用 `$addToSet`，则操作将失败
+
+如果指定的值是数组，则 `$addToSet` 将整个数组作为单个元素追加到数组字段中
+
+```shell
+# 假设文档 { _id: 1, letters: ["a", "b"] }
+db.students.update({_id: 1}, {$addToSet: {letters: ["c", "d"]}})
+# 上面语句执行后，会将 ["c", "d"] 作为一个单独的追加到数组的末尾
+# { _id: 1, letters: ["a", "b", ["c", "d"]] }
+```
+
+如果要将指定数组中的每个元素添加到数组中，则需要使用 `$each` 修饰符和 `$addToSet` 
+
+```shell
+# 假设文档 { _id: 1, letters: ["a", "b"] }
+db.students.update({_id: 1}, {$addToSet: {letters: {$each: ["c", "d"]}})
+# 上面语句执行后，会将 ["c", "d"] 中的每个当作一个元素分别追加到数组字段的末尾
+# { _id: 1, letters: ["a", "b", "c", "d"] }
+```
+
+##### $pop
+
+`$pop`运算符删除数组的第一个或最后一个元素
+
+传递`$pop` 值为 `-1` 删除数组的第一个元素，传递`1`删除数组中的最后一个元素
+
+```
+{ $pop: { <field>: <-1 | 1>, ... } }
+```
+
+如果 `<field>` 不是数组，`$pop` 操作将失败。
+
+如果 `$pop` 运算符删除 `<field>` 中的最后一项，则 `<field>` 将保留一个空数组
+
+```shell
+# 删除第一个元素
+db.students.update( { _id: 1 }, { $pop: { love: -1 } } )
+```
+
+##### $pull
+
+`$pull` 运算符从现有数组中删除与指定条件匹配的所有元素
+
+```
+{ $pull: { <field1>: <value|condition>, <field2>: <value|condition>, ... } }
+```
+
+如果要删除 `<value>` 是一个数组，`$pull` 将仅删除数组中与指定的 `<value>` 完全匹配的元素，包括顺序
+
+如果要删除 `<value>` 是文档，`$pull` 将仅删除数组中具有完全相同的字段和值的元素。字段的顺序可以不同
+
+```
+db.students.update({}, {$pull: {love: {$in: ["yinyue", "zuqiu"]}}})
+```
+
+##### $pullAll
+
+`$pullAll` 运算符从现有数组中删除指定值的所有元素
+
+```
+{ $pullAll: { <field1>: [ <value1>, <value2> ... ], ... } }
+```
+
+如果要删除的 `<value>` 是文档或数组，`$pullAll` 将仅删除数组中与指定的 `<value>` 完全匹配的元素，包括顺序
+
+```
+db.survey.update( { _id: 1 }, { $pullAll: { scores: [ 0, 5 ] } } )
+```
+
+##### $push
+
+`$push`运算符将指定值追加到数组
+
+```
+{ $push: { <field1>: <value1>, ... } }
+```
+
+如果要更新的文档中没有该字段，`$push` 会添加数组字段，并将值作为其元素
+
+如果值是数组，则 `$push` 将整个数组作为单个元素追加。要分别添加值的每个元素，请使用 `$each` 修饰符和 `$push`
+
+```
+db.students.update(
+   { _id: 1 },
+   { $push: { scores: 89 } }
+)
+```
+
+##### `$` 
+
+充当占位符以更新与查询条件匹配的第一个元素
+
+位置 `$` 运算符标识要更新的数组中的元素，而不显式指定元素在数组中的位置
+
+```
+{ "<array>.$" : value }
+```
+
+不要将位置运算符 `$` 与 `upsert` 操作一起使用，因为 `insert` 将在插入的文档中使用$作为字段名称
+
+与 `$unset`运算符一起使用时，位置 `$` 运算符不会从数组中删除匹配元素，而是将其设置为 `null`
+
+##### `$[]`
+
+充当占位符以更新数组中与查询条件匹配的文档中的所有元素
+
+```
+{ <update operator>: { "<array>.$[]" : value } 
 ```
 
 ### 查询
@@ -543,6 +985,30 @@ db.sutdents.find({"love.1", "a"})
 ```shell
 # 查询出数组长度等于3个所有文档
 db.students.find({love: {$size: 3}})
+```
+
+##### $slice
+
+`$slice` 运算符控制查询返回的数组的条数
+
+```shell
+# 返回存储在数组字段中 count 值指定的数组元素数量
+# 如果count的值大于数组长度，则返回该数组的所有元素
+db.collection.find( { field: value }, { array: {$slice: count } } );
+
+# count 也可接受负值， 负值表示返回数组后面的元素
+# 下面查询返回数组字段中的最后两个元素
+db.students.find({}, love: {$slice: -2})
+```
+
+`$slice` 运算符也可接受数组参数 `[skip，limit]` 的形式，其中第一个值表示要跳过的数组中的项数，第二个值表示要返回的项数
+
+```shell
+# 跳过2个数组元素，返回紧接着的5个元素
+db.students.find({}, love: {$slice: [2, 5]})
+
+# 从数组的末尾跳过2个元素，返回从后数紧接着的5个元素
+db.students.find({}, love: {$slice: [-2, 5]})
 ```
 
 #### 投影 — 限制查询返回的字段
@@ -793,9 +1259,175 @@ deleteOne
 deleteMany
 ```
 
+## Aggregation 聚合
 
+聚合操作处理数据记录并返回计算结果。聚合操作将来自多个文档的值组合在一起，并且可以对分组数据执行各种操作以返回单个结果。MongoDB提供了三种执行聚合的方式：`聚合管道`、`map-reduce函数` 和 `单用途聚合方法`
 
+### 聚合管道
 
+`MongoDB` 的聚合框架以数据处理流水线的概念为蓝本。文档进入多阶段管道，将文档转换为聚合结果
+
+聚合管道的 `stage` 是按照顺序一步一步进行的
+
+```
+db.collection.aggregate( [ { <stage> }, ... ], <options>)
+```
+
+```shell
+db.orders.aggregate([
+   { $match: { status: "A" } },
+   { $group: { _id: "$cust_id", total: { $sum: "$amount" } } }
+])
+
+# 上面的聚合操作分为2个阶段
+# 第一阶段：$match 阶段按状态字段过滤文档，并将状态等于“A”的文档传递给下一阶段
+# 第二阶段：$group 阶段按 cust_id 字段对文档进行分组，以计算每个唯一cust_id的金额总和
+```
+
+最基本的管道阶段提供过滤器，其操作类似于查询和文档转换
+
+其他管道操作提供了按特定字段或字段对文档进行分组和排序的工具，以及用于聚合数组内容（包括文档数组）的工具。此外，管道阶段可以使用运算符执行任务，例如计算平均值或连接字符串
+
+聚合管道可以在分片集合上运行
+
+#### 聚合管道使用要点
+
+* 当[`$match`](https://docs.mongodb.com/manual/reference/operator/aggregation/match/#pipe._S_match)和[`$sort`](https://docs.mongodb.com/manual/reference/operator/aggregation/sort/#pipe._S_sort) 出现在管道操作符时，尽量在前面的阶段（最好从第一个阶段开始）使用，以便更好的使用索引，避免全集合扫描
+
+* 如果聚合管道中要使用到 `$geoNear` 操作符，那么 [`$geoNear`](https://docs.mongodb.com/manual/reference/operator/aggregation/geoNear/#pipe._S_geoNear)管道操作符必须为聚合管道中的第一个阶段
+
+* 管道最大返回 16M 的数据，超出报错
+
+#### 聚合表达式
+
+##### 字段路径表达式
+
+`$<feild>` 使用 `$` 来指示字段路径
+
+`$<feild>.<sub-feild>` 使用 `$` 和 `.` 指示内嵌文档字段路径
+
+```shell
+# 某文档中 name 字段
+$name
+
+# 内嵌文档 info 的 createTime 字段
+$info.createTime
+```
+
+##### 系统变量表达式
+
+`$$<variable>` 使用 `$$` 来指示系统变量
+
+```shell
+# 管道中当前操作的文档
+$$CURRENT
+```
+
+##### 常量表达式
+
+`$literal: <value>` 指示常量 `<value>`
+
+```shell
+# 如果不使用 #literal 则 mongodb 认为 $name 是个字段路径表达式
+# 使用 $literal 后 mongodb 就把 $name 作为一个字符串处理
+$literal: "$name"
+```
+
+#### 聚合管道阶段操作符
+
+##### $project
+
+对文档进行投影（限制传递到下个阶段的文档字段）
+
+将包含请求字段的文档传递到管道中的下一个阶段。指定的字段可以是输入文档或新计算字段中的现有字段
+
+```
+{ $project: { <specification(s)> } }
+```
+
+specification 使用的形式如下：
+
+| 格式                    | 描述                         |
+| ----------------------- | ---------------------------- |
+| \<field>: <1 or true>   | 包含指定字段                 |
+| _id: <0 or false>       | 指定_id字段不传递            |
+| \<field>: \<expression> | 添加新字段或重置现有字段的值 |
+| \<field>:\<0 or false>  | 指定排除的字段               |
+
+**要点**
+
+- `_id`默认情况下，该字段包含在输出文档中
+
+- 要在输出文档中包含输入文档中的任何其他字段，必须明确指出
+
+```shell
+# 下面的管道输出 title、author 字段的值
+db.books.aggregate( [ { $project : { _id: 0, title : 1 , author : 1 } } ] )
+```
+
+##### $match
+
+过滤文档将符合指定条件的文档传递到下一个管道阶段
+
+```
+{ $match: { <query> } }
+```
+
+[`$match`](https://docs.mongodb.com/manual/reference/operator/aggregation/match/#pipe._S_match)获取指定查询条件的文档。查询语法与[读操作查询](https://docs.mongodb.com/manual/tutorial/query-documents/#read-operations-query-argument)语法相同
+
+**使用要点**
+
+* `$match` 使用越早要好（减少管道之间数据传递的数量）
+
+```
+db.articles.aggregate(
+    [ { $match : { author : "dave" } } ]
+);
+```
+
+##### $skip
+
+跳过指定数量的[文档](https://docs.mongodb.com/manual/reference/glossary/#term-document)（传入），并将剩余的文档传递到管道中的下一个阶段
+
+```
+{ $skip: <正整数> }
+```
+
+```shell
+# 此操作会跳过管道传递给它的前5个文档。$skip对通过管道的文件内容没有影响
+db.article.aggregate(
+    { $skip : 5 }
+);
+```
+
+##### $limit
+
+限制传递到管道中下一个阶段的文档数
+
+筛选出前几个文档传递给下个阶段
+
+```
+{ $limit: <正整数> }
+```
+
+##### $sort
+
+对输入文档进行排序，并按排序顺序将它们返回到管道
+
+```shell
+{ $sort: { <field1>: <sort order>, <field2>: <sort order> ... } }
+# sort order: 1 升序，-1 降序
+```
+
+```
+db.users.aggregate(
+   [
+     { $sort : { age : -1, posts: 1 } }
+   ]
+)
+```
+
+### Map-Reduce
 
 
 
@@ -816,6 +1448,14 @@ deleteMany
 
 
 ## 查询选择器
+
+
+
+
+
+
+
+
 
 ### 比较运算符
 
