@@ -1831,3 +1831,74 @@ vue init webpack hello-world
 |-- vue.config.js		// webpack 配置文件（该文件需要手动创建，名字不能变）
 ```
 
+## 播放提示音
+
+```js
+# 调用百度tts播放
+new Audio(
+  'http://tts.baidu.com/text2audio?cuid=baiduid&lan=zh&ctp=1&pdt=311&tex=提示音'
+).play();
+
+# 由于 chrome 限制了 audio 等的自动播放，所以需要设置 chrome
+# 1. 打开 chrome://flags/
+# 2. 搜索: Autoplay policy
+# 3. 将 Autoplay policy 的值修改为: No user gesture is requird
+```
+
+## 使用 axios 发送 ajax 请求
+
+### 安装
+
+```bash
+# 将 axios 安装当前项目
+npm install axios --save
+```
+
+### 使用
+
+```js
+# 在需要使用的组件中引入 axios
+import axios from 'axios'
+```
+
+```js
+# 在 vue 的生命周期钩子函数 mounted 中调用
+export default {
+  name: 'home',
+  methods: {
+    getData() {
+      axios.get('/api/index.json').then(this.getDataSucc);
+    },
+    getDataSucc(data) {
+      console.info(data);
+    }
+  },
+  mounted () {
+    this.getData();
+  }
+}
+
+```
+
+### 模拟后端数据
+
+```js
+# 在 src 目录平级的 static 目录下创建文件夹 mock
+# static 目录存放的是静态文件
+# 在创建的 mock 目录中创建 index.json 文件，该文件中可存放模拟后端请求数据
+# 如果要访问该文件则使用路径 http://localhost:8080/static/mock/index.json 即可
+# 此时为了防止代码上线前修改访问路径，则使用代理请求转发功能
+# 打开 config 目录下的 index.js 文件，在 proxyTable 新增如下内容
+proxyTable: {
+  'api': {
+    target: 'http://localhost:8080',	# 访问的根路径
+    pathRewrite: {
+      # 访问的是 /api/XXX 路径时，将该路径替换为后面的 /static/mock/
+      '^/api': '/static/mock/'
+    }
+  }
+}
+```
+
+
+

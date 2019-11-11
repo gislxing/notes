@@ -157,6 +157,15 @@ $ db.createUser(
      roles: [ "readWrite", "dbAdmin" ]
    }
 )
+
+# 修改用户权限
+db.revokeRolesFromUser(
+	"testUser",
+	[{role: "readWrite", db: "test"}]
+)
+
+# 显示当前数据库上的所有用户
+show users
 ```
 
 ## 基本使用
@@ -184,6 +193,9 @@ $ show dbs
 ### 集合操作
 
 ```shell
+# 查看所有集合
+$ db.getCollectionNames()
+
 # 集合操作
 $ db.集合名称.<insert/find>()
 
@@ -212,6 +224,123 @@ $ db.myCollection.find().pretty()
 ```
 要退出shell，请键入quit()或使用<Ctrl-C>快捷方式。
 ```
+
+## BSON 数据类型
+
+BSON是一种二进制序列化格式，用于存储文档并在MongoDB中进行远程过程调用
+
+| type                    | Number | String Alias          | Notes               |
+| :---------------------- | :----- | :-------------------- | :------------------ |
+| Double                  | 1      | “double”              |                     |
+| String                  | 2      | “string”              |                     |
+| Object                  | 3      | “object”              |                     |
+| Array                   | 4      | “array”               |                     |
+| Binary data             | 5      | “binData”             |                     |
+| Undefined               | 6      | “undefined”           | Deprecated.         |
+| ObjectId                | 7      | “objectId”            |                     |
+| Boolean                 | 8      | “bool”                |                     |
+| Date                    | 9      | “date”                |                     |
+| Null                    | 10     | “null”                |                     |
+| Regular Expression      | 11     | “regex”               |                     |
+| DBPointer               | 12     | “dbPointer”           | Deprecated.         |
+| JavaScript              | 13     | “javascript”          |                     |
+| Symbol                  | 14     | “symbol”              | Deprecated.         |
+| JavaScript (with scope) | 15     | “javascriptWithScope” |                     |
+| 32-bit integer          | 16     | “int”                 |                     |
+| Timestamp               | 17     | “timestamp”           |                     |
+| 64-bit integer          | 18     | “long”                |                     |
+| Decimal128              | 19     | “decimal”             | New in version 3.4. |
+| Min key                 | -1     | “minKey”              |                     |
+| Max key                 | 127    | “maxKey”              |                     |
+
+可以将这些类型与 `$type` 运算符一起使用，以按 `BSON` 类型查询文档。`$type` 聚合运算符使用列出的 `BSON` 类型字符串返回运算符表达式的类型
+
+### Date
+
+`Date` 对象存储为带符号的64位整数，表示自Unix纪元（1970年1月1日）以来的毫秒数
+
+`mongo shell` 提供了各种方法来返回日期对象或者日期字符串：
+
+```shell
+# 以字符串形式返回当前日期
+Date()
+
+# 构造函数，它使用 ISODate() 包装器返回Date对象
+new Date()
+
+# 构造函数，它使用 ISODate() 包装器返回Date对象
+ISODate()
+```
+
+```shell
+# 创建一个当前日期字符串
+var myDateString = Date();
+
+# 下面操作返回 myDateString 的类型：string
+typeof myDateString
+```
+
+### ObjectId
+
+要生成新的 `ObjectId` 请在 `mongo shell` 中使用以下操作：
+
+```
+new ObjectId
+```
+
+`ObjectId` 有以下属性/方法:
+
+| Attribute/Method                                             | Description                                               |
+| :----------------------------------------------------------- | :-------------------------------------------------------- |
+| `str`                                                        | 返回对象的十六进制字符串表示形式                          |
+| [`ObjectId.getTimestamp()`](https://docs.mongodb.com/manual/reference/method/ObjectId.getTimestamp/#ObjectId.getTimestamp) | 以 `Date` 作为对象类型的时间戳部分                        |
+| [`ObjectId.toString()`](https://docs.mongodb.com/manual/reference/method/ObjectId.toString/#ObjectId.toString) | 以字符串"`ObjectId(…)`”的形式返回 `JavaScript` 表示形式   |
+| [`ObjectId.valueOf()`](https://docs.mongodb.com/manual/reference/method/ObjectId.valueOf/#ObjectId.valueOf) | 返回对象的十六进制字符串表示形式，这里返回就是 `str` 属性 |
+
+### NumberLong
+
+默认情况下，`mongo shell` 将所有数字视为64位浮点数
+
+`mongo shell` 提供 `NumberLong()` 包装器来处理64位整数
+
+```shell
+# NumberLong() 接受一个字符串类型的整数值
+NumberLong("2090845886852")
+
+# 将 NumberLong 类型的值插入数据库
+db.collection.insertOne( { _id: 10, calc: NumberLong("2090845886852") } )
+```
+
+### NumberInt
+
+`NumberInt(string)` 构造函数来显式指定32位整数
+
+### NumberDecimal
+
+`NumberDecimal(string)` 构造函数，显式指定128位基于十进制的浮点数，能够以精确的精度模拟十进制舍入。此功能适用于处理货币数据的应用程序
+
+```shell
+NumberDecimal("1000.55")
+```
+
+### Timestamps
+
+`MongoDB` 中的时间戳是按照以下方式生成 64 位整数：
+
+```
+前 32 位是自 Unix 纪元以来的秒数
+后 32 位是当前给定的秒内递增数值
+```
+
+因此，在单个独立的 `mongo` 数据库上，`timestamps` 是唯一的
+
+```shell
+# 生成的时间戳: Timestamp(1412180887, 1)
+# 第一个32位值是秒数，第二个32位值是递增整数
+var a = new Timestamp();
+```
+
+`Timestamp` 一般用与 `MongoDB` 内部，开发人员使用 `Date` 类型
 
 ## CRUD ( 增/删/改/查)
 
@@ -1273,6 +1402,14 @@ deleteMany
 db.collection.aggregate( [ { <stage> }, ... ], <options>)
 ```
 
+`<options>` 常用参数如下：
+
+| Field          | Type       | Description                                                  |
+| :------------- | :--------- | :----------------------------------------------------------- |
+| `explain`      | boolean    | 可选，指定返回管道处理过程中的信息                           |
+| `allowDiskUse` | boolean    | 可选，true 会将管道处理过程中的临时数据写入临时文件，主要用于管道数据过大的情况 |
+| `maxTimeMS`    | 无符号整型 | 可选，指定游标操作处理的时间限制（单位：毫秒），设置为 0 或者不设置则操作不超时 |
+
 ```shell
 db.orders.aggregate([
    { $match: { status: "A" } },
@@ -1314,14 +1451,26 @@ $name
 $info.createTime
 ```
 
-##### 系统变量表达式
+##### 聚合表达式中的变量
 
-`$$<variable>` 使用 `$$` 来指示系统变量
+聚合表达式变量分为系统变量和用户自定义变量
+
+`$$<variable>` 使用 `$$` 来访问聚合表达式中的变量
+
+如果变量引用了一个对象，要访问该对象中的特定字段，请使用点表示法 `$$<variable>.<field>`
 
 ```shell
 # 管道中当前操作的文档
 $$CURRENT
 ```
+
+`MongoDB` 支持以下系统变量
+
+| Variable  | Description                                                  |
+| :-------- | :----------------------------------------------------------- |
+| `ROOT`    | 引用当前正在聚合管道阶段处理的根文档，即顶级文档             |
+| `CURRENT` | 引用聚合管道阶段中正在处理的字段路径的开始位置。除非另有说明，否则所有阶段都以`ROOT` 和 `CURRENT` 相同的开始 |
+| `REMOVE`  | 一个计算缺失值的变量。允许条件排除字段。在 `$projection` 中，将字段设置为 `REMOVE` 该字段将从输出中排除 |
 
 ##### 常量表达式
 
@@ -1385,6 +1534,94 @@ db.articles.aggregate(
 );
 ```
 
+##### $group
+
+按指定的表达式对文档进行分组，并把每个不同的分组输出到下一个阶段
+
+输出文档包含一个 `_id` 字段，该字段是不同分组的key。输出文档还可以包含计算字段，这些字段包含按 `$group` 的 `_id` 字段分组的某些累加器表达式的值。`$group` 不会对其输出文档进行排序
+
+```shell
+{
+    $group: {
+        _id: < expression > ,
+        < field1 >: {
+            < accumulator1 >: < expression1 >
+        },
+        ...
+    }
+}
+```
+
+`_id` 是必须的，但是可以给他 `null` 值，此时就把所有输入的文档分为一组，其他字段都是可选的
+
+`accumulator` 操作符如下：
+
+| Name                                                         | Description                                                  |
+| :----------------------------------------------------------- | :----------------------------------------------------------- |
+| [`$addToSet`](https://docs.mongodb.com/manual/reference/operator/aggregation/addToSet/#grp._S_addToSet) | Returns an array of *unique* expression values for each group. Order of the array elements is undefined. |
+| [`$avg`](https://docs.mongodb.com/manual/reference/operator/aggregation/avg/#grp._S_avg) | Returns an average of numerical values. Ignores non-numeric values. |
+| [`$first`](https://docs.mongodb.com/manual/reference/operator/aggregation/first/#grp._S_first) | Returns a value from the first document for each group. Order is only defined if the documents are in a defined order. |
+| [`$last`](https://docs.mongodb.com/manual/reference/operator/aggregation/last/#grp._S_last) | Returns a value from the last document for each group. Order is only defined if the documents are in a defined order. |
+| [`$max`](https://docs.mongodb.com/manual/reference/operator/aggregation/max/#grp._S_max) | Returns the highest expression value for each group.         |
+| [`$mergeObjects`](https://docs.mongodb.com/manual/reference/operator/aggregation/mergeObjects/#exp._S_mergeObjects) | Returns a document created by combining the input documents for each group. |
+| [`$min`](https://docs.mongodb.com/manual/reference/operator/aggregation/min/#grp._S_min) | Returns the lowest expression value for each group.          |
+| [`$push`](https://docs.mongodb.com/manual/reference/operator/aggregation/push/#grp._S_push) | Returns an array of expression values for each group.        |
+| [`$stdDevPop`](https://docs.mongodb.com/manual/reference/operator/aggregation/stdDevPop/#grp._S_stdDevPop) | Returns the population standard deviation of the input values. |
+| [`$stdDevSamp`](https://docs.mongodb.com/manual/reference/operator/aggregation/stdDevSamp/#grp._S_stdDevSamp) | Returns the sample standard deviation of the input values.   |
+| [`$sum`](https://docs.mongodb.com/manual/reference/operator/aggregation/sum/#grp._S_sum) | Returns a sum of numerical values. Ignores non-numeric values. |
+
+示例：
+
+```shell
+# 按照 月、年 进行分组
+db.sales.aggregate(
+   [
+      {
+        $group : {
+           _id : { month: { $month: "$date" }, year: { $year: "$date" } },
+           totalPrice: { $sum: { $multiply: [ "$price", "$quantity" ] } },
+           averageQuantity: { $avg: "$quantity" },
+           count: { $sum: 1 }
+        }
+      }
+   ]
+)
+```
+
+```shell
+# 将所有输入的文档分为一个文档
+db.sales.aggregate(
+   [
+      {
+        $group : {
+           _id : null,
+           totalPrice: { $sum: { $multiply: [ "$price", "$quantity" ] } },
+           averageQuantity: { $avg: "$quantity" },
+           count: { $sum: 1 }
+        }
+      }
+   ]
+)
+```
+
+```shell
+# 去重
+db.sales.aggregate( [ { $group : { _id : "$item" } } ] )
+```
+
+```shell
+# 按照 author 分组，并将 title 的值添加到数组字段 books 中
+db.books.aggregate(
+   [
+     { $group : { _id : "$author", books: { $push: "$title" } } }
+   ]
+)
+
+# 其执行结果如下
+{ "_id" : "Homer", "books" : [ "The Odyssey", "Iliad" ] }
+{ "_id" : "Dante", "books" : [ "The Banquet", "Divine Comedy", "Eclogues" ] 
+```
+
 ##### $skip
 
 跳过指定数量的[文档](https://docs.mongodb.com/manual/reference/glossary/#term-document)（传入），并将剩余的文档传递到管道中的下一个阶段
@@ -1427,6 +1664,206 @@ db.users.aggregate(
 )
 ```
 
+##### $unwind
+
+从输入文档展开数组字段以输出每个元素的文档。每个输出文档中数组字段的值由数组元素替换
+
+```shell
+# 操作数是一个字段路径
+{ $unwind: <field path> }
+```
+
+```shell
+# 操作数是一个文档
+{
+  $unwind:
+    {
+      path: <field path>,
+      includeArrayIndex: <string>,
+      preserveNullAndEmptyArrays: <boolean>
+    }
+}
+```
+
+参数说明：
+
+`path`: 数组字段的字段路径。要指定字段路径，请在字段名称前加上美元符号$，并用引号括起来
+
+`includeArrayIndex`: 可选的。新字段名字（值是元素在数组中的索引）。该名称不能以美元符号 `$` 开头
+
+`preserveNullAndEmptyArrays`: 可选的，默认值为 `false`
+
+​	`true`: 指定的数组字段的值为null、数组字段不存在或为空数组，`$unwind` 将输出文档
+
+​	`false`: 则 `$unwind` 指定的数组字段的值为null、数组字段不存在或为空数组时不输出文档
+
+**使用要点:**
+
+* 如果不能展开 `path` 指定的数组或者 `path` 指定的不是一个数组，则将该字段作为一个单独的元素处理
+
+```shell
+# 假设有如下文档
+{ "_id" : 1, "item" : "ABC", "sizes": [ "S", "M", "L"] }
+{ "_id" : 2, "item" : "EFG", "sizes" : [ ] }
+{ "_id" : 3, "item" : "IJK", "sizes": "M" }
+{ "_id" : 4, "item" : "LMN" }
+{ "_id" : 5, "item" : "XYZ", "sizes" : null }
+```
+
+```shell
+# 1. 使用 $unwind 展开该文档的 sizes 数组
+db.inventory.aggregate( [ {$match: {"_id": 1}}, { $unwind : "$sizes" } ] )
+
+# 执行结果如下所示
+{ "_id" : 1, "item" : "ABC1", "sizes" : "S" }
+{ "_id" : 1, "item" : "ABC1", "sizes" : "M" }
+{ "_id" : 1, "item" : "ABC1", "sizes" : "L" }
+# 除了 sizes 字段的值外其他字段的值不变，sizes 为数组的每个元素值
+
+# 2. 展开文档中的所有记录
+db.inventory.aggregate( [ { $unwind : "$sizes" } ] )
+
+# 执行结果如下
+{ "_id" : 1, "item" : "ABC", "sizes" : "S" }
+{ "_id" : 1, "item" : "ABC", "sizes" : "M" }
+{ "_id" : 1, "item" : "ABC", "sizes" : "L" }
+{ "_id" : 3, "item" : "IJK", "sizes" : "M" }
+
+# 3. 使用 includeArrayIndex 指定将数组的下标输出到 arrayIndex 字段
+db.inventory.aggregate([{
+    $unwind: {
+        path: "$sizes",
+        includeArrayIndex: "arrayIndex"
+    }
+}])
+
+# 执行结果
+{ "_id" : 1, "item" : "ABC", "sizes" : "S", "arrayIndex" : NumberLong(0) }
+{ "_id" : 1, "item" : "ABC", "sizes" : "M", "arrayIndex" : NumberLong(1) }
+{ "_id" : 1, "item" : "ABC", "sizes" : "L", "arrayIndex" : NumberLong(2) }
+{ "_id" : 3, "item" : "IJK", "sizes" : "M", "arrayIndex" : null }
+# 如果 sizes 字段时单个值，则 arrayIndex 为 null
+```
+
+##### $lookup
+
+对未分片的同一个数据的集合执行**左外链接**
+
+对于每个输入文档，`$lookup` 阶段添加一个新的数组字段，其值是来自“已连接”集合的匹配文档。`$lookup` 阶段将这些重新组合的文档传递给下一个阶段
+
+在 `$lookup` 阶段，无法对 `from` 集合进行分片。但是，可以对运行 `aggregate` 方法的集合进行分片
+
+1. 相等匹配语法
+
+   对输入文档的字段和连接文档的字段进行相等匹配
+
+   ```
+   {
+      $lookup:
+        {
+          from: <collection to join>,
+          localField: <field from the input documents>,
+          foreignField: <field from the documents of the "from" collection>,
+          as: <output array field>
+        }
+   }
+   ```
+
+   `$lookup` 参数说明: 
+
+   | Field          | Description                                                  |
+   | :------------- | :----------------------------------------------------------- |
+   | `from`         | 指定相同数据库进行连接的集合名称                             |
+   | `localField`   | 指定输入文档要进行匹配得字段，`$lookup` 使用 `from` 指定集合的文档的  `foreignField` 字段和输入文档的指定字段 `localField` 进行相等匹配<br />如果输入文档没有 `localField` 指定的字段，则 `$lookup` 认为 `localField` 指定字段的值是 `null` 然后再进行匹配 |
+   | `foreignField` | 指定 `from` 集合的文档用于和 `localField` 指定字段进行匹配的字段 |
+   | `as`           | 指定添加到输出文档中的数组字段名称<br />新的数组字段包含从 `from` 指定的集合匹配的文档<br />如果输入文档中已经有了指定的数组字段名称，则会覆盖现有的字段的值 |
+
+2. 要在两个集合之间执行不相关的子查询以及允许除单个相等匹配之外的其他连接条件
+
+   ```
+   {
+      $lookup:
+        {
+          from: <collection to join>,
+          let: { <var_1>: <expression>, …, <var_n>: <expression> },
+          pipeline: [ <pipeline to execute on the collection to join> ],
+          as: <output array field>
+        }
+   }
+   ```
+
+   `$lookup` 参数说明: 
+
+   | Field      | Description                                                  |
+   | :--------- | :----------------------------------------------------------- |
+   | `from`     | 指定相同数据库进行连接的集合名称                             |
+   | `let`      | 可选<br />定义在 `pipeline` 阶段使用的变量<br />使用 `$expr` 操作符可访问 `let` 定义的变量<br />`let` 变量可由管道中的各个阶段访问，包括嵌套在管道中的其他 `$lookup` 阶段 |
+   | `pipeline` | 指定在连接集合上执行的管道<br />指定空的 `pipeline: []` 则返回所有的连接文档<br />要访问 `let` 定义的变量，则需要使用 `$expr` 操作符，在 `$expr` 中使用 `$$变量名` 即可访问 |
+   | `as`       | 指定添加到输出文档中的数组字段名称<br />新的数组字段包含从 `from` 指定的集合匹配的文档<br />如果输入文档中已经有了指定的数组字段名称，则会覆盖现有的字段的值 |
+
+示例：
+
+```shell
+# orders.item == inventory.sku 进行左外链接
+db.orders.aggregate([
+   {
+     $lookup:
+       {
+         from: "inventory",
+         localField: "item",
+         foreignField: "sku",
+         as: "inventory_docs"
+       }
+  }
+])
+```
+
+`MongoDB 3.6` 添加了 `$mergeObjects` 运算符，将多个文档合并到一个文档中
+
+```shell
+db.orders.aggregate([
+   {
+      $lookup:
+         {
+           from: "warehouses",
+           let: { order_item: "$item", order_qty: "$ordered" },
+           pipeline: [
+              { $match:
+                 { $expr:
+                    { $and:
+                       [
+                         { $eq: [ "$stock_item",  "$$order_item" ] },
+                         { $gte: [ "$instock", "$$order_qty" ] }
+                       ]
+                    }
+                 }
+              },
+              { $project: { stock_item: 0, _id: 0 } }
+           ],
+           as: "stockdata"
+         }
+    }
+])
+```
+
+##### $out
+
+将聚合管道返回的文档写入到指定的集合
+
+`$out` 必须是管道的最后一个阶段
+
+```shell
+# $out 接收一个字符串类型的集合名称（out 写入的集合）
+{ $out: "<output-collection>" }
+```
+
+使用要点:
+
+* 如果写入的集合不存在，则 `MongoDB` 会在当前数据库上创建该集合，聚合操作完成之前该集合是不可见的，如果聚合操作失败，则 `MongoDB` 不会创建该集合
+* 如果写入的集合已经存在，那么在 `out` 阶段将使用新集合**替换**掉旧集合（旧的数据将会被清除）
+* 不会清除旧集合中的索引
+* 管道输出将会校验所有的索引（旧文档索引和新文档索引），如果校验失败则当前管道输出失败
+
 ### Map-Reduce
 
 
@@ -1448,14 +1885,6 @@ db.users.aggregate(
 
 
 ## 查询选择器
-
-
-
-
-
-
-
-
 
 ### 比较运算符
 
@@ -1537,3 +1966,342 @@ db.users.aggregate(
 | [`$elemMatch`](https://docs.mongodb.com/manual/reference/operator/projection/elemMatch/#proj._S_elemMatch) | 投影数组中与指定[`$elemMatch`](https://docs.mongodb.com/manual/reference/operator/projection/elemMatch/#proj._S_elemMatch)条件匹配的第一个元素。 |
 | [`$meta`](https://docs.mongodb.com/manual/reference/operator/projection/meta/#proj._S_meta) | 投影在[`$text`](https://docs.mongodb.com/manual/reference/operator/query/text/#op._S_text)操作期间分配的文档分数。 |
 | [`$slice`](https://docs.mongodb.com/manual/reference/operator/projection/slice/#proj._S_slice) | 限制从数组投射的元素数量。支持跳过和限制切片。               |
+
+## 索引
+
+如果没有索引 `MongoDB` 在查找的时候必须进行全集合扫描，如果创建了合适的索引 `MongoDB` 就可以使用索引来限制扫描的文档数量
+
+索引是特殊的数据结构，它以易于遍历的形式存储集合数据集的一小部分。索引存储特定字段或字段集的值，按字段的值排序。索引条目的排序支持有效的等式匹配和基于范围的查询操作。此外，MongoDB可以使用索引中的顺序返回排序结果
+
+索引以升序（1）或降序（-1）排序顺序存储对字段的引用
+
+### _id 默认索引
+
+`MongoDB` 在创建集合时在 `_id` 字段上创建唯一索引。此索引不能被删除
+
+### 创建索引
+
+```
+db.collection.createIndex( <keys>, <options> )
+```
+
+参数说明：
+
+| Parameter | Type     | Description                                                  |
+| :-------- | :------- | :----------------------------------------------------------- |
+| `keys`    | document | 包含 `field` 和 `value` 的文档，其中 `field` 是索引 `key`，值是 `field` 的索引类型<br />`value` 等于 `1` 表示升序索引，`-1` 表示降序索引 |
+| `options` | document | 可选的，一组选项文档，控制如何创建索引                       |
+
+`optons` 文档常用选项说明：
+
+| Parameter          | Type    | Description                                                  |
+| :----------------- | :------ | :----------------------------------------------------------- |
+| unique             | boolean | 可选的，创建一个唯一索引，`true` 创建唯一索引，默认值为 `false` |
+| name               | string  | 可选的，索引名称，不指定则由 `MongoDB` 生成                  |
+| sparse             | boolean | 可选的，默认值 false，true 创建稀疏索引，稀疏索引引用 field 字段存在的文档，如果文档的 field 不存在，则不会添加到索引中 |
+| expireAfterSeconds | integer | 可选的，指定一个值（以秒为单位）作为TTL来控制 `MongoDB` 在此集合中保留文档的时间。即超过设置的时间后该文档被删除 |
+
+```shell
+# 在 collection 上创建 name 字段的降序索引
+db.collection.createIndex( { name: -1 } )
+```
+
+当索引包含查询扫描的所有字段时，索引支持查询
+
+
+
+
+
+### 索引类型
+
+#### 单字段索引
+
+除 `MongoDB` 定义的 `_id` 索引外，`MongoDB` 还支持在文档的单个字段上创建用户定义的升序/降序索引
+
+```shell
+# 在 score 字段上查询时将会使用该索引
+db.collection.createIndex( { score: 1 } )
+```
+
+单字段索引升序/降序都可以
+
+#### 复合索引
+
+多个字段的用户定义索引，即复合索引。
+
+复合索引的排序非常重要
+
+对于复合索引和排序操作，索引键的排序顺序（即升序或降序）可以确定索引是否可以支持排序操作
+
+```
+db.collection.createIndex( { <field1>: <type>, <field2>: <type2>, ... } )
+```
+
+除了支持在所有索引字段上匹配的查询之外，复合索引还可以支持与索引字段的前缀匹配的查询
+
+```
+假如创建复合索引：{A: 1, B: 1, C: 1}
+那么下面的查询将被该索引支持：
+	{A}
+	{A, B}
+	{A, B, C}
+
+下面的查询该索引不支持
+	{C}
+	{B}
+	{B, C}
+	{A, C}
+
+也就是说查询的字段的顺序必须从第一个字段开始且必须是连续的，同时查询的排序也要和定义的相同或者逆向
+```
+
+```shell
+# 创建一个复合索引
+db.products.createIndex( { "item": 1, "stock": 1 } )
+
+# 下面查询都被上面创建的索引支持
+db.products.find( { item: "Banana" } )
+db.products.find( { item: "Banana", stock: { $gt: 5 } } )
+
+# 不被支持
+db.products.find( { stock: 9 } )
+```
+
+##### 前缀
+
+索引前缀是索引字段的起始子集
+
+```shell
+# 假设下面的索引
+{ "item": 1, "location": 1, "stock": 1 }
+
+# 那么他的前缀如下
+{ item: 1 }
+{ item: 1, location: 1 }
+```
+
+对于复合索引，MongoDB可以使用索引来支持对索引前缀的查询。因此，MongoDB可以在以下字段中使用索引进行查询：
+
+- the `item` field,
+- the `item` field *and* the `location` field,
+- the `item` field *and* the `location` field *and* the `stock` field.
+
+### 查看索引
+
+#### 查询集合中的所有索引
+
+```
+db.collection.getIndexes()
+```
+
+#### 查询数据库中的所有索引
+
+```shell
+db.getCollectionNames().forEach(function(collection) {
+   indexes = db[collection].getIndexes();
+   print("Indexes for " + collection + ":");
+   printjson(indexes);
+});
+```
+
+### 删除索引
+
+#### 删除单个索引
+
+从集合删除指定索引
+
+不能删除 `_id` 字段上的默认索引
+
+```shell
+db.collection.dropIndex(<string or document>)
+# <string or document> 指定要删除的索引。可以通过索引名称或索引定义文档指定索引
+# 索引的名称或者索引定义文档可通过 db.collection.getIndexes() 获得
+
+# 删除除 _id 之外的所有的索引
+db.accounts.dropIndexes()
+```
+
+**注意** 此命令在受影响的数据库上获取写锁定，并将阻止其他操作，直到完成为止
+
+```shell
+# 假如调用方法获得集合上的所有索引
+db.collection.getIndexes()
+
+# 获得结果如下
+[
+   {  "v" : 1,
+      "key" : { "_id" : 1 },
+      "ns" : "test.pets",
+      "name" : "_id_"
+   },
+   {
+      "v" : 1,
+      "key" : { "cat" : -1 },
+      "ns" : "test.pets",
+      "name" : "catIdx"
+   }
+]
+
+# 删除 catIdx 索引
+db.collection.getIndexes("catIdx")
+db.collection.getIndexes({ "cat" : -1 })
+```
+
+### 修改索引
+
+要修改现有索引，需要删除并重新创建索引
+
+### 索引使用情况（执行计划）
+
+#### 聚合管道执行计划
+
+使用 `$indexStats` 返回有关集合的每个索引的使用统计信息。如果使用访问控制运行，则用户必须具有包含`indexStats` 操作的权限
+
+```shell
+{ $indexStats: { } }
+
+# 聚合管道也可使用 explain() 方法查询执行计划
+db.collection.explain().aggregate()
+```
+
+返回信息说明：
+
+| Output Field | Description                                                  |
+| :----------- | :----------------------------------------------------------- |
+| `name`       | 索引名称                                                     |
+| `key`        | 索引定义文档                                                 |
+| `host`       | `mongod` 进程的主机名和端口。                                |
+| `accesses`   | 索引使用统计：<br />        `ops` 使用索引的操作符数量<br />        `since` MongoDB 收集统计数据的时间 |
+
+`accessses` 字段报告的统计信息仅包括由用户请求的索引访问。 
+
+`$indexStats` 必须是聚合管道中的第一个阶段
+
+`$indexStats` 不允许在事物中使用
+
+#### 查询执行计划
+
+`db.collection.explain()` 或 `cursor.explain()` 方法返回有关查询过程的统计信息，包括使用的索引，扫描的文档数以及查询处理的时间（以毫秒为单位）
+
+##### db.collection.explain()
+
+返回以下操作的查询计划信息：
+
+```
+aggregate()
+count()
+find()
+group()
+remove()
+update()
+distinct()
+findAndModify()
+```
+
+```shell
+# method 是上面列出的方法
+db.collection.explain().<method(...)>
+```
+
+```shell
+db.products.explain().remove( { category: "apparel" }, { justOne: true } )
+```
+
+对于写入操作 `db.collection.explain()` 返回有关将要执行但不实际修改数据库的写入操作的信息
+
+查看 `explain()` 支持的方法列表:
+
+```
+db.collection.explain().help()
+```
+
+```shell
+# 例子
+db.products.explain().count( { quantity: { $gt: 50 } } )
+```
+
+## Spring Boot 操作 MongoDB
+
+1. 在 `MongoDB` 中新建用户（拥有 `readWrite` 权限）
+
+2. 在 `application.yml` 新增 `MongoDB` 配置
+
+   ```yaml
+   spring:
+     data:
+       mongodb:
+         host: 47.75.110.73		# mongodb 主机ip
+         port: 27017						# mongodb 主机端口号
+         username: testUser		# 需要操作的数据库的用户名（该用户需要拥有 readWrite 权限）
+         password: 1qaz				# 密码
+         database: test				# 连接的数据库
+   ```
+
+3. 在 `Dao` 中注入 `MongoTemplate`
+
+   ```java
+   @Autowired
+   private MongoTemplate mongoTemplate;
+   ```
+
+4. 创建 bean
+
+   ```java
+   /**
+    * @Document注解把一个java类声明为mongodb的文档，可以通过collection参数指定这个类对应的文档
+    * @Document(collection="mongodb 对应 collection 名")
+    */
+   @Document(collection = "customer")
+   public class Customer implements Serializable {
+   
+       // @Id 标注主键，不可重复，自带索引，可以在定义的列名上标注，需要自己生成并维护不重复的约束
+       // @Id 标注的字段与 mongodb 的 _id 关联
+       @Id
+       public String id;
+   
+       public String firstName;
+       public String lastName;
+   
+       public Customer() {}
+   
+       public Customer(String firstName, String lastName) {
+           this.firstName = firstName;
+           this.lastName = lastName;
+       }
+   }
+   ```
+
+5. 使用 `MongoTemplate` 操作数据库
+
+   ```java
+   mongoTemplate.insert(new Customer("aa", "bb"));
+   ```
+
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

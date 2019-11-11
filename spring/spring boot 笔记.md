@@ -281,6 +281,7 @@ public class MyWebConfiguration extends WebMvcConfigurerAdapter
 普通类调用Spring bean对象：
 实现接口：ApplicationContextAware，然后加上@Component 注解即可
 /**
+
  * 普通类调用Spring bean对象
  */
 @Component
@@ -355,7 +356,269 @@ spring.thymeleaf.cache=false
 //可以使用：basePackageClasses={},basePackages={}
 @ComponentScan(basePackages={"cn.kfit","org.kfit"})	--如果添加了此注解那么spring boot的默认扫描路径就会失效，此时如果需要应将默认扫描路径也添加上
 
+## 项目启动执行特定方法
 
+1. 实现 `ApplicationRunner` 接口
+
+   ```java
+   /**
+    * 继承ApplicationRunner接口后项目启动时会按照执行顺序执行run方法
+    * 通过设置Order的value来指定执行的顺序（越小的越早执行）
+    */
+   @Component
+   @Order(value = 1)
+   public class StartService implements ApplicationRunner {
+       @Override
+       public void run(ApplicationArguments args) throws Exception {
+           // do some thing... 
+       }
+   }
+   ```
+
+2. 实现 接口
+
+   ```java
+   @Component
+   public class MyCommandLineRunner implements CommandLineRunner,Ordered{
+       @Override
+       public int getOrder(){
+         	//返回执行顺序
+           return 1;
+       }
+   
+       @Override
+       public void run(String... var1) throws Exception{
+           // do some thing ...
+       }
+   }
+   ```
+
+## yml 注入复杂类型（map, list）
+
+```yaml
+person:
+    lastName: hello
+    age: 18
+    boss: false
+    birth: 2017/12/12
+    maps: 
+    	k1: fadf
+    	k2: deee
+    lists:
+      - lisi
+      - zhaoliu
+    dog:
+      name: 小狗
+      age: 12
+```
+
+```java
+/**
+ * 将配置文件中配置的每一个属性的值，映射到这个组件中
+ * @ConfigurationProperties：告诉SpringBoot将本类中的所有属性和配置文件中相关的配置进行绑定；
+ *      prefix = "person"：配置文件中哪个下面的所有属性进行一一映射
+ *
+ * 只有这个组件是容器中的组件，才能容器提供的@ConfigurationProperties功能；
+ *
+ */
+@Component
+@ConfigurationProperties(prefix = "person")
+public class Person {
+ 
+    private String lastName;
+    private Integer age;
+    private Boolean boss;
+    private Date birth;
+ 
+    private Map<String,Object> maps;
+    private List<Object> lists;
+    private Dog dog;
+  
+}
+```
+
+## 定时任务
+
+1. 在启动类中加上 `@EnableScheduling` 注解来开启定时任务
+
+   ```java
+   @EnableScheduling
+   @SpringBootApplication
+   public class DemoApplication {
+   
+       public static void main(String[] args) {
+           SpringApplication.run(DemoApplication.class, args);
+       }
+   
+   }
+   ```
+
+2. 在执行定时任务的方法上加上 `@Scheduled`
+
+   `@Scheduled` 有三种定时任务的执行方式，包括 `fixedDelay`、`fixedRate`、`corn` 表达式
+
+   `fixedDelay`：指定两次任务执行的时间间隔(毫秒)，此时间间隔指的是，前一次任务结束与下一个任务开始的间隔。如：@Scheduled(fixedDelay = 5*1000 )，表示第一个任务结束后，过5秒后，开始第二个任务。
+
+   `fixedRate`：指定两次任务执行的时间间隔(毫秒)，此时间间隔指的是，前一个任务开始与下一个任务开始的间隔。如：@Scheduled(fixedRate= 5*1000 )，表示第一个任务开始后(第一个任务执行时间小于5秒)，第一个任务开始后的第6秒，开始第二个任务。如果第一个任务执行时间大于5秒，第一个任务结束后，直接开始第二个任务。
+
+   `cron`：使用表达是进行任务的执行，例如：@Scheduled(cron = "0/15 * * * * ? ")每隔15秒执行一次
+
+   ```java
+   /**
+    * 每个1分钟执行一次
+    */
+   @Scheduled(cron = "0 0/1 * * * ?")
+   public void monitorUsdt() {
+     // do some thing ...
+   }
+   ```
+
+## 数据库连接池 - hikari
+
+Spring boot 2.x 默认使用 hikari 数据库连接池，如果是web项目，则不需要单独引入依赖包
+
+hikari 配置如下：
+
+```yaml
+datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/exchange_robot?useUnicode=true&characterEncoding=utf-8&serverTimezone=GMT
+    username: root
+    password: xxxxx
+    # 数据库连接池
+    hikari:
+      # 最小空闲连接数量
+      minimum-idle: 10
+      # 连接池最大连接数，默认是10
+      maximum-pool-size: 20
+      # 此属性控制从池返回的连接的默认自动提交行为,默认值：true
+      auto-commit: true
+      # 空闲连接存活最大时间，默认600000（10分钟）
+      idle-timeout: 180000
+      # 此属性控制池中连接的最长生命周期，值0表示无限生命周期，默认1800000即30分钟
+      max-lifetime: 1800000
+      # 数据库连接超时时间,默认30秒，即30000
+      connection-timeout: 30000
+      # 健康监测
+      connection-test-query: select 1
+      # 连接池名称
+      pool-name: DatebookHikariCP
+```
+
+## 分页插件 PageHelper
+
+引入依赖包
+
+```xml
+<dependency>
+  <groupId>com.github.pagehelper</groupId>
+  <artifactId>pagehelper-spring-boot-starter</artifactId>
+  <version>1.2.12</version>
+</dependency>
+```
+
+使用
+
+```java
+@Override
+public PageInfo<User> getPageUsers(Page page) {
+  PageHelper.startPage(page.getPageNum(), page.getPageSize());
+  List<User> list = testDao.getAllUsers();
+  return new PageInfo<>(list);
+}
+```
+
+## 全局异常处理
+
+```java
+import com.bh.bitOctopus.bean.ResponseData;
+import com.bh.bitOctopus.constant.ResponseCode;
+import com.bh.bitOctopus.exception.TestException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.BindException;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+/**
+ * 全局统一异常处理
+ *
+ * @author zbs
+ * @date 2019/11/3
+ */
+@Slf4j
+@ControllerAdvice
+@ResponseBody
+public class ExceptionHandle {
+
+    // 处理的异常类型
+    @ExceptionHandler(value = Exception.class)
+    public ResponseData exceptionHandle(Exception e) {
+        log.error("服务器错误: ", e);
+        return ResponseData.error(ResponseCode.SERVICE_ERROR);
+    }
+
+    /**
+     * 请求参数异常处理
+     *
+     * @param e
+     * @return
+     */
+    @ExceptionHandler(BindException.class)
+    public ResponseData methodArgumentNotValidExceptionHandle(BindException e) {
+        log.error("请求参校验错误: ", e);
+        List<String> defaultMsg = e.getBindingResult().getAllErrors()
+                .stream()
+                .map(ObjectError::getDefaultMessage)
+                .collect(Collectors.toList());
+
+        String msg;
+        if (defaultMsg == null || defaultMsg.isEmpty()) {
+            msg = ResponseCode.PARAM_NOT_VALID.getMsg();
+        } else {
+            msg = defaultMsg.get(0);
+        }
+
+        return ResponseData.error(ResponseCode.PARAM_NOT_VALID.getCode(), msg);
+    }
+
+    /**
+     * 处理请求参数校验异常
+     *
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseData resolveConstraintViolationException(ConstraintViolationException ex) {
+        ResponseData responseData = ResponseData.error(ResponseCode.PARAM_NOT_VALID);
+        Set<ConstraintViolation<?>> constraintViolations = ex.getConstraintViolations();
+        if (!constraintViolations.isEmpty()) {
+            StringBuilder msgBuilder = new StringBuilder();
+            for (ConstraintViolation constraintViolation : constraintViolations) {
+                msgBuilder.append(constraintViolation.getMessage()).append(",");
+            }
+            String errorMessage = msgBuilder.toString();
+            if (errorMessage.length() > 1) {
+                errorMessage = errorMessage.substring(0, errorMessage.length() - 1);
+            }
+            responseData.setMsg(errorMessage);
+            return responseData;
+        }
+
+        responseData.setMsg(ex.getMessage());
+        return responseData;
+    }
+
+}
+```
 
 
 
