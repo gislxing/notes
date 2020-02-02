@@ -208,6 +208,8 @@ docker attach id/容器名称
 ```bash
 docker run -d 镜像 [命令] [参数]
 # 例如：docker run -d --name=docker002 ubuntu /bin/sh -c "while true;do echo hello world; sleep 1; done"
+# --net host docker跳过配置容器的独立网络栈，即使用宿主机网络
+# docker run --name bo-gateway --net host -p 80:80 -d fbf87957b524
 ```
 
 ### 查看容器日志
@@ -446,7 +448,7 @@ $ docker build [OPTIONS] PATH | URL | -
 
 # 例如(在当前目录构建镜像)
 # 说明：hub.docker仓库名称/镜像名称[:版本号]
-$ docker build -t runoob/ubuntu:v1 . 
+$ docker build -t runoob/ubuntu:v1 -f Dockerfile . 
 ```
 
 #### Dockerfile 指令

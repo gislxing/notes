@@ -1,4 +1,6 @@
-spring cloud 实战笔记
+# spring cloud 实战笔记
+
+## 注册中心 Eureka server
 
     注册中心基本proterties配置如下：
         # 服务名称
@@ -6,25 +8,25 @@ spring cloud 实战笔记
         
         # 端口号
         server.port=8888
-
+    
         # 注册中心实例地址
         eureka.instance.hostname=localhost
-
+    
         # 不向注册中心注册自己
         eureka.client.register-with-eureka=false
-
+    
         # 关闭服务检索功能即查询服务功能
         eureka.client.fetch-registry=false
-
+    
         # 设置心跳检测频率
         eureka.server.renewal-percent-threshold=0.49
-
+    
         # 关闭注册中心自我保护
         eureka.server.enable-self-preservation=false
-
+    
         # 服务地址
-        eureka.client.serviceUrl.defaultZone=http://${eureka.instance.hostname}:${server.port}/eureka/
-
+      eureka.client.serviceUrl.defaultZone=http://${eureka.instance.hostname}:${server.port}/eureka/
+    
     1、配置高可用注册中心
         1、新建spring boot项目，添加注解@EnableEurekaServer启用注册中心
         1、pom文件引入以下依赖
@@ -33,7 +35,7 @@ spring cloud 实战笔记
                 <artifactId>spring-boot-starter-parent</artifactId>
                 <version>1.4.3.RELEASE</version>
             </parent>
-
+    
             <dependencies>
                 <dependency>
                     <groupId>org.springframework.cloud</groupId>
@@ -45,9 +47,10 @@ spring cloud 实战笔记
             spring.application.name=eureka-service
             server.port=8888
             #spring.profiles=peer1
-
+    
             eureka.instance.hostname=peer1
-            #eureka.instance.prefer-ip-address=true
+            # 将 ip 地址注册到注册中心 
+            eureka.instance.prefer-ip-address=true
             eureka.client.register-with-eureka=true
             eureka.client.fetch-registry=true
             eureka.client.serviceUrl.defaultZone=http://peer2:8889/eureka
@@ -56,7 +59,7 @@ spring cloud 实战笔记
             spring.application.name=eureka-service
             server.port=8889
             #spring.profiles=peer2
-
+    
             eureka.instance.hostname=peer2
             #eureka.instance.prefer-ip-address=true
             eureka.client.register-with-eureka=true
@@ -68,7 +71,7 @@ spring cloud 实战笔记
         5、在命令行启动注册中心
             java -jar eureka-server-1.0-SNAPSHOT.jar --spring.profiles.active=peer1
             java -jar eureka-server-1.0-SNAPSHOT.jar --spring.profiles.active=peer2
-
+    
     2、服务的注册与消费
         1、服务的发现由Eureka的客户端完成，服务消费由Ribbon完成（Ribbon是一个基于HTTP/TCP的客户端负载均衡器）
         2、创建服务提供者和消费者
@@ -107,7 +110,7 @@ spring cloud 实战笔记
                     </dependency>
                 2、(可选) application.properties文件中添加以下配置(此为将springcloud的健康监测交给actuator管理)
                     eureka.client.healthcheck.enabled=true
-
+    
     3、多网卡环境下IP的选择
         1、忽略指定名称的网卡
             spring:
@@ -237,7 +240,7 @@ spring cloud 实战笔记
                 // Feign客户端方法
                 @RequestMapping(value = "/user", method = RequestMethod.GET)
                 User getUserInfo(@RequestParam("id") Long id, @RequestParam("username") String username);
-
+    
                 // controller方法
                 @GetMapping("/user")
                 public User getUserInfo(@RequestParam("id") Long id, @RequestParam("username") String username){
@@ -247,7 +250,7 @@ spring cloud 实战笔记
                 // Feign客户端方法
                 @RequestMapping(value = "/user", method = RequestMethod.GET)
                 User getUserInfo(@RequestParam Map<String, Object> map);
-
+    
                 // controller方法
                 @GetMapping("/user")
                 public User getUserMap(@RequestParam Long id){
@@ -259,7 +262,7 @@ spring cloud 实战笔记
             // Feign 客户端方法
             @RequestMapping(value = "/user", method = RequestMethod.POST)
             User getUserInfo(@RequestBody User user);
-
+    
             // controller 方法
             @PostMapping(value = "/user")
             public User getUser(@RequestBody User user){
@@ -317,18 +320,18 @@ spring cloud 实战笔记
                 public class UserFeignClientFallbackFactory implements FallbackFactory<UserFeignClient> {
 
                     private static final Logger LOGGER = LoggerFactory.getLogger(UserFeignClientFallbackFactory.class);
-
+    
                     @Override
                     public UserFeignClient create(Throwable t) {
                         final Throwable th = t;
-
+    
                         return new UserFeignClient() {
                             @Override
                             public User getUserInfo(Long id) {
                                 LOGGER.info("fallback reason: " + th.getCause());
                                 return getUserInfoFallback(id);
                             }
-
+    
                             @Override
                             public User getUserInfo(Map<String, Object> map) {
                                 LOGGER.info("fallback reason: ", th);
@@ -336,7 +339,7 @@ spring cloud 实战笔记
                             }
                         };
                     }
-
+    
                     private User getUserInfoFallback(Long id){
                         User user = new User();
                         user.setId(id);
@@ -513,7 +516,7 @@ spring cloud 实战笔记
                     public int filterOrder() {
                         return 1;
                     }
-
+    
                     /**
                     * true: 执行该过滤器; false: 不执行该过滤器
                     * @return
@@ -522,7 +525,7 @@ spring cloud 实战笔记
                     public boolean shouldFilter() {
                         return true;
                     }
-
+    
                     /**
                     * 过滤器的核心方法，具体的实现逻辑
                     * 此处实现的是在请求之前打印请求的日志信息
@@ -551,13 +554,13 @@ spring cloud 实战笔记
         为 zuul 添加容错的回退处理和比较简单，只需要实现 ZuulFallbackProvider 接口：
             @Component
             public class MovieFallbackProvider implements ZuulFallbackProvider {
-
+    
                 @Override
                 public String getRoute() {
                     // 此回退类为那个微服务使用
                     return "simple-consumer-movie";
                 }
-
+    
                 /**
                 * 回退的响应
                 * @return
@@ -570,30 +573,30 @@ spring cloud 实战笔记
                             // 响应码
                             return HttpStatus.OK;
                         }
-
+    
                         @Override
                         public int getRawStatusCode() throws IOException {
                             // 数字类型的响应吗
                             return this.getStatusCode().value();
                         }
-
+    
                         @Override
                         public String getStatusText() throws IOException {
                             // 返回状态的文本信息
                             return this.getStatusCode().getReasonPhrase();
                         }
-
+    
                         @Override
                         public void close() {
-
+    
                         }
-
+    
                         @Override
                         public InputStream getBody() throws IOException {
                             // 响应体
                             return new ByteArrayInputStream("微服务不可用，请稍后重试".getBytes());
                         }
-
+    
                         @Override
                         public HttpHeaders getHeaders() {
                             // 响应 Header
