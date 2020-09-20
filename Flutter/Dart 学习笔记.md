@@ -583,7 +583,7 @@ Dart 内置支持下面这些类型：
 - runes (用于在字符串中表示 Unicode 字符)
 - symbols
 
-你可以直接使用字母量来初始化上面的这些类型。 例如 `'this is a string'` 是一个字符串字面量， `true` 是一个布尔字面量。
+你可以直接使用字母量来初始化上面的这些类型。 例如 `this is a string` 是一个字符串字面量， `true` 是一个布尔字面量。
 
 由于 Dart 中每个变量引用的都是一个对象 – 一个类的实例， 你通常使用构造函数来初始化变量。 一些内置的类型具有自己的构造函数。例如， 可以使用 `Map()`构造函数来创建一个 map， 就像这样 `new Map()`。
 
@@ -591,9 +591,13 @@ Dart 内置支持下面这些类型：
 
 Dart 支持两种类型的数字：
 
+- `num`
+
+  数字类型的父类，可接收整型和浮点数
+
 - [`int`](https://api.dartlang.org/stable/dart-core/int-class.html)
 
-  整数值，其取值通常位于 -253 和 253 之间。
+  整数值，具有任意精度的整数
 
 - [`double`](https://api.dartlang.org/stable/dart-core/double-class.html)
 
@@ -956,6 +960,8 @@ bool isNoble(int atomicNumber) => _nobleGases[atomicNumber] != null;
 
 可选参数可以是命名参数或者基于位置的参数，但是这两种参数不能同时当做可选参数。
 
+大括号`{}`括起来的参数是可选参数
+
 ##### Optional named parameters（可选命名参数）
 
 调用方法的时候，你可以使用这种形式 `paramName: value` 来指定命名参数。例如：
@@ -1237,8 +1243,8 @@ main() {
 
 | 描述                     | 操作符                                                       |
 | :----------------------- | :----------------------------------------------------------- |
-| unary postfix            | `*expr*++`    `*expr*--`    `()`    `[]`    `.`    `?.`      |
-| unary prefix             | `-*expr*`    `!*expr*`    `~*expr*`    `++*expr*`    `--*expr*` |
+| unary postfix            | `expr++`    `expr--`    `()`    `[]`    `.`    `?.`          |
+| unary prefix             | `-expr`    `!expr`    `~expr`    `++expr`    `--expr`        |
 | multiplicative           | `*`    `/`    `%`  `~/`                                      |
 | additive                 | `+`    `-`                                                   |
 | shift                    | `<<`    `>>`                                                 |
@@ -1250,7 +1256,7 @@ main() {
 | logical AND              | `&&`                                                         |
 | logical OR               | `||`                                                         |
 | if null                  | `??`                                                         |
-| conditional              | `*expr1* ? *expr2* : *expr3*`                                |
+| conditional              | `expr1 ? expr2 : expr3`                                      |
 | cascade                  | `..`                                                         |
 | assignment               | `=`    `*=`    `/=`    `~/=`    `%=`    `+=`    `-=`    `<<=`    `>>=`    `&=`    `^=`    `|=`    `??=` |
 
@@ -1427,11 +1433,11 @@ assert(a == 6);
 
 可以使用逻辑操作符来 操作布尔值：
 
-| 操作符    | 解释                                                  |
-| :-------- | :---------------------------------------------------- |
-| `!*expr*` | 对表达式结果取反（true 变为 false ，false 变为 true） |
-| `||`      | 逻辑 OR                                               |
-| `&&`      | 逻辑 AND                                              |
+| 操作符  | 解释                                                  |
+| :------ | :---------------------------------------------------- |
+| `!expr` | 对表达式结果取反（true 变为 false ，false 变为 true） |
+| `||`    | 逻辑 OR                                               |
+| `&&`    | 逻辑 AND                                              |
 
 下面是使用示例：
 
@@ -1445,14 +1451,14 @@ if (!done && (col == 0 || col == 3)) {
 
 在 Dart 中可以单独操作数字的某一位， 下面操作符同样应用于整数：
 
-| 操作符    | 解释                                                  |
-| :-------- | :---------------------------------------------------- |
-| `&`       | AND                                                   |
-| `|`       | OR                                                    |
-| `^`       | XOR                                                   |
-| `~*expr*` | Unary bitwise complement (0s become 1s; 1s become 0s) |
-| `<<`      | Shift left                                            |
-| `>>`      | Shift right                                           |
+| 操作符  | 解释                                                  |
+| :------ | :---------------------------------------------------- |
+| `&`     | AND                                                   |
+| `|`     | OR                                                    |
+| `^`     | XOR                                                   |
+| `~expr` | Unary bitwise complement (0s become 1s; 1s become 0s) |
+| `<<`    | Shift left                                            |
+| `>>`    | Shift right                                           |
 
 使用位于和移位操作符的示例：
 
@@ -1512,9 +1518,7 @@ String toString() {
 
 #### Cascade notation (..)（级联操作符）
 
-级联操作符 (`..`) 可以在同一个对象上 连续调用多个函数以及访问成员变量。 使用级联操作符可以避免创建 临时变量， 并且写出来的代码看起来 更加流畅：
-
-例如下面的代码：
+级联操作符 (`..`) 可以在同一个对象上连续调用多个函数以及访问成员变量：
 
 ```dart
 querySelector('#button') // Get an object.
@@ -2159,8 +2163,7 @@ class Logger {
 
   // _cache is library-private, thanks to the _ in front
   // of its name.
-  static final Map<String, Logger> _cache =
-      <String, Logger>{};
+  static final Map<String, Logger> _cache = <String, Logger>{};
 
   factory Logger(String name) {
     if (_cache.containsKey(name)) {
@@ -2866,7 +2869,7 @@ greet() async {
 
 Dart 有一些语言特性来支持 异步编程。 最常见的特性是 `async` 方法和 `await` 表达式。
 
-Dart 库中有很多返回 Future 或者 Stream 对象的方法。 这些方法是 *异步的*： 这些函数在设置完基本的操作 后就返回了， 而无需等待操作执行完成。 例如读取一个文件，在打开文件后就返回了。
+Dart 库中有很多返回 Future 或者 Stream 对象的方法。 这些方法是*异步的*： 这些函数在设置完基本的操作后就返回了， 而无需等待操作执行完成。 例如读取一个文件，在打开文件后就返回了。
 
 有两种方式可以使用 Future 对象中的 数据：
 
@@ -2878,7 +2881,7 @@ Dart 库中有很多返回 Future 或者 Stream 对象的方法。 这些方法�
 - 使用 `async` 和一个 *异步 for 循环* (`await for`)
 - 使用 [Stream API](http://dart.goodev.org/guides/libraries/library-tour#stream)
 
-使用 `async` 和 `await` 的代码是异步的， 但是看起来有点像同步代码。 例如，下面是一些使用 `await` 来 等待异步方法返回的示例：
+使用 `async` 和 `await` 的代码是异步的， 但是看起来有点像同步代码。 例如，下面是一些使用 `await` 来等待异步方法返回的示例：
 
 ```dart
 await lookUpVersion()
@@ -2949,7 +2952,7 @@ var exitCode = await runExecutable(entrypoint, args);
 await flushThenExit(exitCode);
 ```
 
-在 `await *expression*` 中， `*expression*` 的返回值通常是一个 Future； 如果返回的值不是 Future，则 Dart 会自动把该值放到 Future 中返回。 Future 对象代表返回一个对象的承诺（promise）。 `await *expression*` 执行的结果为这个返回的对象。 await expression 会阻塞住，直到需要的对象返回为止。
+在 `await expression` 中， `expression` 的返回值通常是一个 Future； 如果返回的值不是 Future，则 Dart 会自动把该值放到 Future 中返回。 Future 对象代表返回一个对象的承诺（promise）。 `await expression` 执行的结果为这个返回的对象。 await expression 会阻塞住，直到需要的对象返回为止。
 
 **如果 await 无法正常使用，请确保是在一个 async 方法中。** 例如要在 `main()` 方法中使用 `await`， 则 `main()` 方法的函数体必须标记为 `async`：
 
@@ -2970,7 +2973,7 @@ await for (variable declaration in expression) {
 }
 ```
 
-上面 `*expression*` 返回的值必须是 Stream 类型的。 执行流程如下：
+上面 `expression` 返回的值必须是 Stream 类型的。 执行流程如下：
 
 1. 等待直到 stream 返回一个数据
 2. 使用 stream 返回的参数 执行 for 循环代码，

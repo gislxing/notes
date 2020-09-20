@@ -209,7 +209,7 @@ docker attach id/容器名称
 docker run -d 镜像 [命令] [参数]
 # 例如：docker run -d --name=docker002 ubuntu /bin/sh -c "while true;do echo hello world; sleep 1; done"
 # --net host docker跳过配置容器的独立网络栈，即使用宿主机网络
-# docker run --name bo-gateway --net host -p 80:80 -d fbf87957b524
+$ docker run --name bo-gateway --net host -p 80:80 -d fbf87957b524
 ```
 
 ### 查看容器日志

@@ -6,6 +6,8 @@
 
 先确认电脑上的`python`版本为`python3`，打开命令行窗口，并输入`python -V`，显示`Python 3.x.x`就可以，如果没有则下载`python3`的最新版本安装（安装时记得将python添加到环境变量中）
 
+进制
+
 ### 创建简单的Python列表
 
 可以按照以下的方式创建Python列表：
