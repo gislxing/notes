@@ -3500,7 +3500,346 @@ first_page_user = page_user.page(1)
 data_list = first_page.object_list
 ```
 
-## session
+## [session 会话](https://docs.djangoproject.com/zh-hans/3.1/topics/http/sessions/#module-django.contrib.sessions)
+
+`Django` 在服务器端存储数据并提供 `cookie` 的发送和接收。Cookie包含会话ID(sessionId) - 而不是数据本身（除非您使用基于cookie的后端）
+
+### 打开会话
+
+`Django` 的会话通过配置一个中间件实现的
+
+为了打开会话，需要做下面的操作
+
+- 编辑设置中的 `MIDDLEWARE`，并确保他包含了 `django.contrib.sessions.middleware.SessionMiddleware`。默认 `settings.py` 文件是已经打开了 `SessionMiddleware` 这项设置
+
+如果你不想使用会话功能，你可以从配置的 `MIDDLEWARE` 中删除 `SessionMiddleware`，并且从 `INSTALLED_APPS` 中删除 `django.contrib.sessions`
+
+### 配置会话(session)引擎
+
+默认情况下，Django 在数据库里存储会话（使用 `django.contrib.sessions.models.Session` ）。虽然这很方便，但在其他地方存储会话数据速度更快，因此 Django 可以在文件系统或缓存中配置存储会话数据
+
+#### 使用数据库支持的会话
+
+如果你想使用数据库支持的会话，你需要在 [`INSTALLED_APPS`](https://docs.djangoproject.com/zh-hans/3.1/ref/settings/#std:setting-INSTALLED_APPS) 里添加 `'django.contrib.sessions'` 。
+
+一旦在安装中配置，运行 `manage.py migrate` 来安装单个数据库表来存储会话数据
+
+#### 使用缓存会话
+
+为了得到更好的性能，你可以使用基于缓存的会话后端。
+
+使用 `Django` 的缓存系统来存储会话，你首先需要确保已经配置了缓存，查看 [cache documentation](https://docs.djangoproject.com/zh-hans/3.1/topics/cache/) 获取详情
+
+如果你在 [`CACHES`](https://docs.djangoproject.com/zh-hans/3.1/ref/settings/#std:setting-CACHES) 定义了多缓存，`Django` 会使用默认缓存。如果要使用其他缓存，请将 [`SESSION_CACHE_ALIAS`](https://docs.djangoproject.com/zh-hans/3.1/ref/settings/#std:setting-SESSION_CACHE_ALIAS) 设置为该缓存名。
+
+一旦配置好了缓存，你有两种办法在缓存中存储数据：
+
+- 设置 [`SESSION_ENGINE`](https://docs.djangoproject.com/zh-hans/3.1/ref/settings/#std:setting-SESSION_ENGINE) 为 `"django.contrib.sessions.backends.cache"` 用于简单缓存会话存储。会话数据直接被存储在缓存里。然而，会话数据可能不是长久的：因为缓存满了或者缓存服务重启了，所以缓存数据会被收回。
+- 为了持久化缓存数据，设置 [`SESSION_ENGINE`](https://docs.djangoproject.com/zh-hans/3.1/ref/settings/#std:setting-SESSION_ENGINE) 为 `"django.contrib.sessions.backends.cached_db"` 。这使用直写式缓存——每次写入缓存的数据也会被写入到数据库。如果数据不在缓存中，会话仅使用数据库进行读取。
+
+#### 使用基于文件的会话
+
+要使用基于文件的会话，需要设置 [`SESSION_ENGINE`](https://docs.djangoproject.com/zh-hans/3.1/ref/settings/#std:setting-SESSION_ENGINE) 为 `"django.contrib.sessions.backends.file"` 。
+
+你可能想设置 [`SESSION_FILE_PATH`](https://docs.djangoproject.com/zh-hans/3.1/ref/settings/#std:setting-SESSION_FILE_PATH) (默认从 `tempfile.gettempdir()` 输出，很可能是 `/tmp` ) 来控制 `Django` 存储会话文件的路径。要确保 Web 服务器有权限读取这个地址
+
+#### 使用基于cookie的会话
+
+要使用基于cookies的会话，需要设置 [`SESSION_ENGINE`](https://docs.djangoproject.com/zh-hans/3.1/ref/settings/#std:setting-SESSION_ENGINE) 为 `"django.contrib.sessions.backends.signed_cookies"` 。这个会话数据将使用 Django 的加密工具( [cryptographic signing](https://docs.djangoproject.com/zh-hans/3.1/topics/signing/) ) 和 [`SECRET_KEY`](https://docs.djangoproject.com/zh-hans/3.1/ref/settings/#std:setting-SECRET_KEY) 工具进行保存。
+
+建议将 [`SESSION_COOKIE_HTTPONLY`](https://docs.djangoproject.com/zh-hans/3.1/ref/settings/#std:setting-SESSION_COOKIE_HTTPONLY) 设置为 `True` 来防止通过 `JavaScript` 访问存储数据
+
+### 在视图中使用会话
+
+当激活 `SessionMiddleware` 后，每个 [`HttpRequest`](https://docs.djangoproject.com/zh-hans/3.1/ref/request-response/#django.http.HttpRequest) 对象（任何 Django 视图函数的第一个参数） 将得到一个 `session` 属性，该属性是一个类字典对象。
+
+你可以在视图中任意位置读取它并写入 `request.session` 
+
+`request.session` 属性常用方法
+
+- `get(key, default=None)`
+
+  获取 `session` 中存储的数据
+
+  ```python
+  fav_color = request.session.get('fav_color', 'red')
+  ```
+
+- `pop(key, default=__not_given)` 
+
+  从 `session` 中删除一条数据，并返回该数据
+
+  ```python
+  fav_color = request.session.pop('fav_color', 'blue')
+  ```
+
+- `flush()`
+
+  删除当前会话和会话 `cookie` 
+
+- `get_session_cookie_age()` 
+
+  返回 `session cookies` 的失效时间，以秒为单位。默认 [`SESSION_COOKIE_AGE`](https://docs.djangoproject.com/zh-hans/3.1/ref/settings/#std:setting-SESSION_COOKIE_AGE) 
+
+- `set_expiry(value)`
+
+  为会话设置过期时间。你可以传递很多不同值：
+
+  - 如果 `value` 是整型，会话将在闲置数秒后过期。比如，调用 `request.session.set_expiry(300)` 会使得会话在5分钟后过期。
+  - 如果 `value` 是一个 `datetime` 或 `timedelta` 对象，会话将在指定的 date/time 过期。注意，如果你正在使用 [`PickleSerializer`](https://docs.djangoproject.com/zh-hans/3.1/topics/http/sessions/#django.contrib.sessions.serializers.PickleSerializer) ，那么 `datetime` 和 `timedelta` 的值只能序列化。
+  - 如果 `value` 是 `0` ，则当浏览器关闭后，用户会话 cookie 将过期。
+  - 如果 `value` 是 `None` ，会话会恢复为全局会话过期策略。
+
+- `get_expiry_age()`
+
+  返回该会话过期的秒数。对于没有自定义过期时间的会话（或者那些设置为浏览器关闭时过期的），这等同于 [`SESSION_COOKIE_AGE`](https://docs.djangoproject.com/zh-hans/3.1/ref/settings/#std:setting-SESSION_COOKIE_AGE) 
+
+  这个函数接受两个可选的关键参数：
+  
+  - `modification` ：会话的最后一次修改，当做一个 [`datetime`](https://docs.python.org/3/library/datetime.html#datetime.datetime) 对象。默认是当前时间。
+  - `expiry` ：会话的过期信息，如一个 [`datetime`](https://docs.python.org/3/library/datetime.html#datetime.datetime) 对象，整数（秒）或 `None`。默认为通过 [`set_expiry()`](https://docs.djangoproject.com/zh-hans/3.1/topics/http/sessions/#django.contrib.sessions.backends.base.SessionBase.set_expiry) 存储在会话中的值，或 `None` 。
+
+### 会话对象指南
+
+- 在 `request.session` 上使用普通的 `Python` 字符串作为字典键
+- 以下划线开头的会话字典键保留给 `Django` 作内部使用
+- 不要使用新对象覆盖 `request.session` ，不要访问或设置它的属性。像使用 Python 字典一样使用它。
+
+#### 简单示例
+
+```python
+# 简单登录，并在session中保存登录用户id
+def login(request):
+    m = Member.objects.get(username=request.POST['username'])
+    if m.password == request.POST['password']:
+        request.session['member_id'] = m.id
+        return HttpResponse("You're logged in.")
+    else:
+        return HttpResponse("Your username and password didn't match.")
+```
+
+## [form 表单](https://docs.djangoproject.com/zh-hans/3.1/topics/forms/)
+
+### 构建表单类
+
+#### Form 类
+
+创建自己的表单类文件 `forms.py`
+
+```python
+# forms.py
+from django import forms
+
+class NameForm(forms.Form):
+    your_name = forms.CharField(label='Your name', max_length=100)
+```
+
+表单类含有一个 [`is_valid()`](https://docs.djangoproject.com/zh-hans/3.1/ref/forms/api/#django.forms.Form.is_valid) 方法，来统一验证所有字段，如果通过则返回 `True` 
+
+#### 从视图创建表单类
+
+从视图类中接收到前台传递的数据，然后创建自己的表单类
+
+```python
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
+
+from .forms import NameForm
+
+def get_name(request):
+    # if this is a POST request we need to process the form data
+    if request.method == 'POST':
+        # create a form instance and populate it with data from the request:
+        form = NameForm(request.POST)
+        # check whether it's valid:
+        if form.is_valid():
+            # process the data in form.cleaned_data as required
+            # ...
+            # redirect to a new URL:
+            return HttpResponseRedirect('/thanks/')
+
+    # if a GET (or any other method) we'll create a blank form
+    else:
+        form = NameForm()
+
+    return render(request, 'name.html', {'form': form})
+```
+
+如果我们访问这个视图用的是 `GET` 请求，它会创建一个空的表单实例并将其放置在模板上下文中进行渲染
+
+如果表单提交用的是 `POST` 请求，那么该视图将再次创建一个表单实例并使用请求中的数据填充它
+
+我们调用表单的 `is_valid()` 方法；如果不为 `True` ，我们带着表单返回到模板
+
+如果 `is_valid()` 为 `True` ，我们就能在其 `cleaned_data` 属性中找到所有通过验证的表单数据。我们可以在发送一个HTTP重定向告诉浏览器下一步去向之前用这些数据更新数据库或者做其他处理
+
+#### 模板
+
+我们没有必要在模板 `name.html` 中做过多的操作：
+
+```django
+<form action="/your-name/" method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Submit">
+</form>
+```
+
+所有的表单字段及其属性都将通过 `Django` 模板语言从 `{{ form }}` 中被解包成 `HTML` 标记
+
+#### 表单中的错误信息
+
+可通过 `Field.error_messages` 覆盖默认错误信息
+
+使用 `{{ form.name_of_field.errors }}` 显示该字段的错误信息列表，它被渲染成无序列表
+
+```python
+name = forms.CharField(error_messages={'required': 'Please enter your name'})
+
+# 表单中获取错误信息
+{{ form.name.errors }}
+```
+
+`Django Form` 的字段类型以及允许的错误字段键可在下面查找 : 表单类 [Form 全部属性](https://docs.djangoproject.com/zh-hans/3.1/ref/forms/fields/) 
+
+### 详解 `Django Form` 类
+
+所有表单类都作为 [`django.forms.Form`](https://docs.djangoproject.com/zh-hans/3.1/ref/forms/api/#django.forms.Form) 或者 [`django.forms.ModelForm`](https://docs.djangoproject.com/zh-hans/3.1/topics/forms/modelforms/#django.forms.ModelForm) 的子类来创建。您可以把 `ModelForm` 想象成 `Form` 的子类。实际上 `Form` 和 `ModelForm` 从（私有） `BaseForm` 类继承了通用功能
+
+如果表单是要直接用来添加或编辑 `Django` 模型，用 [ModelForm](https://docs.djangoproject.com/zh-hans/3.1/topics/forms/modelforms/) ，它会根据 `Model` 类构建一张对应字段及其属性的表单
+
+## [用户认证](https://docs.djangoproject.com/zh-hans/3.1/topics/auth/default/)
+
+### `create_user` 创建用户
+
+1. 创建自定义用户模型
+
+   创建一个新的项目，必须创建一个自定义的用户模型
+
+   ```python
+   from django.contrib.auth.models import AbstractUser
+   
+   class User(AbstractUser):
+       pass
+   ```
+
+2. 重写默认的用户表
+
+   ```python
+   # settings.py 文件
+   AUTH_USER_MODEL = 'myapp.User'
+   ```
+
+   引号中描述的是: `应用名称.模型名称` 
+
+   **在创建任何迁移或者首次运行 `manage.py migrate` 之前执行这个操作** 
+
+3. 迁移
+
+   ```shell
+   $ python manage.py makemigrations
+   $ python manage.py migrate
+   ```
+
+4. 注册用户
+
+   `create_user()` 会创建、保存并返回用户对象
+
+   ```python
+   user = User.objects.create_user('john', 'lennon@thebeatles.com', 'johnpassword')
+   ```
+
+### `authenticate` 验证用户登录
+
+```python
+authenticate(request=None, **credentials)
+```
+
+它使用 `username` 和 `password` 作为参数来验证，如果验证有效，则返回一个用户对象。如果后端引发 [`PermissionDenied`](https://docs.djangoproject.com/zh-hans/3.1/ref/exceptions/#django.core.exceptions.PermissionDenied) 错误，将返回 `None`
+
+```python
+from django.contrib.auth import authenticate, login
+
+def my_view(request):
+    username = request.POST['username']
+    password = request.POST['password']
+    user = authenticate(request, username=username, password=password)
+    if user is not None:
+        login(request, user)
+        # Redirect to a success page.
+        ...
+    else:
+        # Return an 'invalid login' error message.
+        ...
+```
+
+### `login` 用户登录及记录用户登录状态
+
+```python
+login(request, user, backend=None)
+```
+
+ `login()` 会在 session 中保存用户的ID
+
+### `logout` 用户退出登录
+
+```python
+logout(request)
+```
+
+调用 `logout()` 后，当前请求的会话数据会被全部清除
+
+### `is_authenticated` 验证用户是否登录
+
+限制访问页面最原始的办法就是检查 `request.user.is_authenticated` 并重定向到登录页面
+
+```python
+from django.conf import settings
+from django.shortcuts import redirect
+
+def my_view(request):
+    if not request.user.is_authenticated:
+        return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
+    # ...
+```
+
+### `@login_required`  判断用户是否登录的装饰器
+
+```python
+login_required(redirect_field_name='next', login_url=None)
+```
+
+使用
+
+```python
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def my_view(request):
+    ...
+```
+
+`login_required()` 会执行以下操作：
+
+- 如果用户没有登录，会重定向到 [`settings.LOGIN_URL`](https://docs.djangoproject.com/zh-hans/3.1/ref/settings/#std:setting-LOGIN_URL) ，并传递绝对路径到查询字符串中
+- 如果用户已经登录，则正常执行视图
+
+`login_required()` 也有可选参数 `login_url` ：
+
+```python
+from django.contrib.auth.decorators import login_required
+
+# 指定没有登录跳转的页面，此时配置文件中的 LOGIN_URL 将不起作用
+@login_required(login_url='/accounts/login/')
+def my_view(request):
+    ...
+```
+
+### `set_password()`修改密码
+
+```python
+user.set_password('新密码')
+```
 
 
 
@@ -3510,7 +3849,31 @@ data_list = first_page.object_list
 
 
 
-## form 表单
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
