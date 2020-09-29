@@ -433,6 +433,128 @@ println(first == second) // false
 println(first != second) // true
 ```
 
+##### 字符串模板
+
+字符串模板可以将变量的值插入到文本中
+
+1. 变量模板
+
+   要将变量的值添加到字符串中，在变量名称前写一个美元符号: `$变量`
+
+   ```kotlin
+   val city = "Paris"
+   val temp = "24"
+   
+   println("Now, the temperature in $city is $temp degrees Celsius.")
+   // 和下面代码输出一样
+   println("Now, the temperature in " + city + " is " + temp + " degrees Celsius.")
+   ```
+
+2. 表达式模板
+
+   可以使用字符串模板将任意表达式的结果放入字符串中: `${表达式}` 
+
+   ```kotlin
+   val language = "Kotlin"
+   println("$language has ${language.length} letters in the name")
+   ```
+
+##### 获取子字符串
+
+1. 截取字符串一部分
+
+   `substring(startIndex, lastIndex)` 截取字符串一部分(不包含 `lastIndex` 位置的字符 )
+
+   如果省略 `lastIndex` 则表示从 `startIndex` 开始到字符串末尾
+
+   ```kotlin
+   val greeting = "Hello"
+   println(greeting.substring(0, 3)) // "Hel"
+   println(greeting.substring(1, 3)) // "el"
+   println(greeting.substring(2))    // "llo"
+   println(greeting.substring(4, 5)) // "o"
+   ```
+
+    `substringAfter`和`substringBefore`也可获得部分字符串，接受分隔字符作为参数，返回指定的字符首次出现位置的后面或者前面的字符串，如果分割字符串没有找到则返回整个字符串
+
+   ```kotlin
+   // greeting = "Hello"
+   println(greeting.substringAfter('l'))  // "lo"
+   println(greeting.substringBefore("o")) // "Hell"
+   println(greeting.substringBefore('z')) // "Hello"
+   ```
+
+2. 替换部分字符串
+
+   `replace` 函数可用第二个参数替换第一个参数
+
+   ```kotlin
+   val example = "Good morning..."
+   println(example.replace("morning", "bye")) // "Good bye..."
+   println(example.replace('.', '!'))         // "Good morning!!!"
+   
+   ```
+
+   如果只需要替换参数的**第一个匹配**项，请使用`replaceFirst`
+
+   ```kotlin
+   val example = "one one two three"
+   println(example.replaceFirst("one", "two")) // "two one two three"
+   ```
+
+3. 重复字符串
+
+   `repeat` 函数将字符串重复字符串多次
+
+   ```kotlin
+   print("Hello".repeat(4)) // HelloHelloHelloHello
+   ```
+
+##### 处理字符串
+
+字符串像数组一样可以迭代
+
+1. 字符串和数组相互转换
+
+   ```kotlin
+   val chars = charArrayOf('A', 'B', 'C', 'D', 'E', 'F')
+   
+   val stringFromChars = String(chars) // "ABCDEF"
+   
+   val charsFromString = stringFromChars.toCharArray() // { 'A', 'B', 'C', 'D', 'E', 'F' }
+   
+   val theSameString = String(charsFromString) // "ABCDEF"
+   
+   val text = "Hello world"
+   val parts: Array<String> = text.split(" ").toTypedArray() // {"Hello", "world"}
+   ```
+
+2. 遍历字符串
+
+   可以使用 `loop` 遍历字符串中的字符
+
+   ```kotlin
+val scientistName = "Isaac Newton"
+   
+   for (i in 0 until scientistName.length) {
+       print("${scientistName[i]} ") // print the current character
+   }
+   
+   for (ch in scientistName) {
+   		print("$ch ") // print the current character
+}
+   ```
+
+   通过索引迭代数组的示例：
+   
+   ```kotlin
+   val rainbow = "ROYGCBV"
+   
+   for (index in rainbow.indices){
+       println("${index+1}: ${rainbow[index]}")
+   }
+   ```
+
 ### 类型转换
 
 `Kotlin` 不进行自动类型转换，所有类型之间的转换必须显示的进行
@@ -691,7 +813,9 @@ val b4 = true xor true   // false
 - `<` （少于）
 - `<=` （小于或等于）
 
-## 类型推断
+## 数据类型和变量
+
+### 类型推断
 
 推断类型时，其结果类型是表达式中类型最大的那个类型
 
@@ -707,7 +831,7 @@ val longNum: Long = 1000
 val result = num + longNum // 1100, Long
 ```
 
-### Short and Byte 类型
+#### Short and Byte 类型
 
 只有 `Short` 和 `Byte` 类型的表达式结果类型是 `Int` 
 
@@ -725,7 +849,7 @@ val five: Short = 5
 val six = (one + five).toShort() // 6, Short
 ```
 
-### 表达式结果类型
+#### 表达式结果类型
 
 在不同数字类型的表达式中，结果类型按照以下方法判断：
 
@@ -733,6 +857,617 @@ val six = (one + five).toShort() // 6, Short
 2. 否则，如果任何一个操作数的类型是 `Float`, 则结果类型是 `Float`.
 3. 否则，如果任何一个操作数的类型是 `Long`, 则结果类型是 `Long`.
 4. 其他情况结果类型是 `Int`.
+
+### 范围 range
+
+`Kotlin` 提供了一种使用**range**表示范围
+
+```kotlin
+val within = c in a..b
+```
+
+`a..b` 表示从`a`到`b`数字范围（包括两个边界），`in`是一个特殊的关键字，用于检查值是否在范围内
+
+如果 `c` 在范围内则 `within=true` ，否则 `winthin=false`
+
+```kotlin
+println(5 in 5..15)  // true
+println(12 in 5..15) // true
+println(15 in 5..15) // true
+println(20 in 5..15) // false
+```
+
+如果检测一个值不在一个范围内，则只需要使用 `!in`
+
+```kotlin
+val notWithin = 100 !in 10..99 // true
+```
+
+可以为变量分配范围，并在以后使用
+
+```kotlin
+val range = 100..200
+println(300 in range) // false
+```
+
+### 对象 Objects
+
+一切都是对象
+
+在 `Kotlin` 中，每个变量和值都是一个对象，例如，整数5和字符串 "high" 是对象
+
+#### 复制对象引用 Copying by reference
+
+`Kotlin` 中变量和值仅仅只是指向对象：如果创建一个变量并为其赋值一个对象，则另一个变量也可以指向同一对象
+
+`=`符号不会复制对象本身，而只会复制对其的引用
+
+#### 状态和行为
+
+对象拥有状态和行为
+
+属性(property)：在 `Kotlin` 中，允许你访问对象的状态，这里的状态就是属性。只需要在对象的后面加上点(`.`)和属性名称就可访问
+
+成员函数(member functions)：绑定到具体类型上的函数，这些被绑定的函数就代表了对象的行为
+
+### 数组 array
+
+数组是同一类型元素的集合，所有元素按顺序存储在内存中
+
+创建数组时将确定要存储的元素的数量，并且无法更改。但是，您可以随时修改存储的元素
+
+<img src="./img/array-desc.svg" style="zoom: 33%;" />
+
+#### 创建具有指定元素的数组
+
+`Kotlin` 提供了许多类型的数组：`IntArray`, `LongArray`, `DoubleArray`, `FloatArray`, `CharArray`, `ShortArray`, `ByteArray`, `BooleanArray` 存储对应类型的元素，**注意这里没有 `StringArray`**
+
+要创建指定类型的数组，我们需要调用一个特殊函数并传递所有元素以将它们存储在一起：
+
+- `intArrayOf` 创建 `IntArray`
+- `charArrayOf` 创建 `CharArray` 
+- `doubleArrayOf` 创建 `DoubleArray` 
+
+```kotlin
+val numbers = intArrayOf(1, 2, 3, 4, 5) // It stores 5 elements of the Int type
+println(numbers.joinToString()) // 1, 2, 3, 4, 5
+
+val characters = charArrayOf('K', 't', 'l') // It stores 3 elements of the Char type
+println(characters.joinToString()) // K, t, l
+
+val doubles = doubleArrayOf(1.25, 0.17, 0.4) // It stores 3 elements of the Double type
+println(doubles.joinToString()) // 1.15, 0.17, 0.4
+```
+
+#### 创建具有指定大小的数组
+
+要创建具有指定大小的数组
+
+```kotlin
+val numbers = IntArray(5) // an array for 5 integer numbers
+println(numbers.joinToString())
+
+val doubles = DoubleArray(7) // an array for 7 doubles
+println(doubles.joinToString())
+```
+
+这些具有预定义大小的数组由相应类型的默认值填充（数字类型为零）
+
+#### 数组的大小
+
+数组始终具有大小，即元素数。要获得它，我们需要获取`size`属性的值。它是Int类型的数字
+
+```kotlin
+val numbers = intArrayOf(1, 2, 3, 4, 5)
+println(numbers.size) // 5 
+```
+
+创建数组后，无法更改其大小
+
+#### 访问元素
+
+通过索引设置值：
+
+```kotlin
+array[index] = elem
+```
+
+通过索引获取值：
+
+```kotlin
+val elem = array[index]
+```
+
+`Kotlin` 提供了几种方便的方法来访问数组的第一个和最后一个元素以及最后一个索引：
+
+```kotlin
+val strings = arrayOf("abc", "cdf", "efg")
+println(strings.first()) // "abc"
+println(strings.last()) // "efg"
+println(strings.lastIndex) // 2
+```
+
+使用这种方法可以使您的代码更具可读性，并防止访问不存在的索引
+
+#### 比较数组
+
+要比较两个数组，请调用`contentEquals()`函数，并传递另一个作为参数。当两个数组以相同的顺序包含完全相同的元素则返回`true`，否则返回`false`：
+
+```kotlin
+val numbers1 = intArrayOf(1, 2, 3, 4)
+val numbers2 = intArrayOf(1, 2, 3, 4)
+val numbers3 = intArrayOf(1, 2, 3)
+
+println(numbers1.contentEquals(numbers2)) // true
+println(numbers1.contentEquals(numbers3)) // false
+```
+
+#### indices
+
+`数组名.indices` 获得数组的索引范围
+
+```kotlin
+val arr = intArrayOf(1, 2, 3, 4)
+for (i in arr.indices) {
+  // 打印数组的每个索引
+  println(i)
+}
+```
+
+`数组名.indices - 整数` 表示跳过 `整数` 表示的索引
+
+```kotlin
+for (i in arr.indices - 2) {
+  // 这里跳过了索引2，只打印 0 1 3
+  println(i)
+}
+```
+
+### 正则表达式
+
+#### 创建一个正则表达式
+
+`Kotlin` 有两种方式创建正则表达式
+
+1. 创建一个`String`实例，然后调用 `toRegex()`，这将使该字符串产生一个正则表达式：
+
+```kotlin
+val string = "cat" // creating the "cat" string
+val regex = string.toRegex() // creating the "cat" regex
+```
+
+2. 调用`Regex`构造函数
+
+```kotlin
+val regex = Regex("cat") // creating a "cat" regex
+```
+
+#### 简单匹配
+
+```kotlin
+String.matches(regex: String): Boolean
+```
+
+用于查找**完全**匹配，即整个字符串必须与模式匹配
+
+```kotlin
+val regex = Regex("cat") // creating the "cat" regex
+    
+val stringCat = "cat"
+val stringDog = "dog"
+val stringCats = "cats"
+
+println(stringCat.matches(regex))   // true
+println(stringDog.matches(regex))   // false
+println(stringCats.matches(regex))  // false
+```
+
+#### 点字符(.)
+
+点`.`匹配任何单个字符，包括字母，数字，空格等。它不能匹配的唯一字符是换行符`\n`
+
+```kotlin
+val regex = Regex("cat.") // creating the "cat." regex
+
+val stringCat = "cat."
+val stringEmotionalCat = "cat!"
+val stringCatN = "cat\n"
+
+println(stringCat.matches(regex))   // true
+println(stringEmotionalCat.matches(regex))   // true
+println(stringCatN.matches(regex))  //false
+```
+
+#### 问号(?)
+
+问号`?`是一个特殊字符，表示**可选项**。它的意思是: 前面的字符或什么都没有
+
+```kotlin
+val regex = Regex("cats?") // creating the "cats?" regex
+
+val stringCat = "cat"
+val stringManyCats = "cats"
+
+println(stringCat.matches(regex))   // true
+println(stringManyCats.matches(regex))   // true
+```
+
+### BigInteger
+
+Java类库提供了一个`BigInteger`用于处理非常大的数字（正数和负数）的类。因此，当您使用 `Kotlin/JVM` 环境时，可以使用`BigInteger` 
+
+`BigInteger`类是**不可变的**，这意味着函数和类返回新实例
+
+`BigInteger`除非绝对必要，否则不要使用。使用它总是会影响性能。`BigInteger`操作比内置整数类型的操作慢
+
+#### 创建BigInteger对象
+
+`BigInteger`属于`java.math`包，我们通过编写以下语句将其导入：
+
+```kotlin
+import java.math.BigInteger
+
+val number1 = BigInteger("62957291795228763406253098")
+val number2 = BigInteger.valueOf(1000000000)
+val number3 = 1234.toBigInteger()
+```
+
+此外，该类具有几个有用的常量。使用特定常量比创建额外对象快一点：
+
+```kotlin
+val zero = BigInteger.ZERO // 0
+val one = BigInteger.ONE   // 1
+val ten = BigInteger.TEN   // 10
+```
+
+### null 和 non-null 类型
+
+`NullPointerException` 类型问题的处理
+
+`Kotlin` 中只有以下三种引发 `NullPointerException` 类型异常
+
+1. 明确抛出：`throw NullPointerException()`
+2. `!!` 语法
+3. 错误的初始化，例如：构造函数和父类构造函数
+
+`Kotlin` 中的每个引用都可以为空或不为空
+
+```kotlin
+// 默认下面的定义方式是：不为 null 类型定义
+var name: String = null
+```
+
+这个将不能编译，因为我们声明了一个 `non-null` 变量
+
+```kotlin
+var name: String? = null
+```
+
+这里的 `?` 表示变量 `name` 可以是 `null`
+
+#### 访问 null 变量
+
+假设下面的定义
+
+```kotlin
+var name: String? = null
+print(name.length)
+```
+
+这段代码不能被编译
+
+有2中方法可以访问 `null变量` 
+
+1. ```kotlin
+   if (name != null) {
+       print(name.length)
+   }
+   ```
+
+2. 使用安全调用 `?.`
+
+   ```kotlin
+   print(name?.length)
+   ```
+
+### 类型系统
+
+#### Any
+
+`Kotlin` 中， `Any` 是所有非空类型的根类（root ），这意味着所有非空类型是 `Any` 的子类
+
+`Kotlin` 保证 `Any` 类型的子类型永远不能为 `null`，所以在 `Kotlin` 中 `null` 检查是无用的
+
+`Any?`（可以为null） 类型是 `Any` 类型的父类
+
+<img src="./img/any2.png" style="zoom: 33%;" />
+
+
+
+`null类型` 是 `non-null类型` 的父类，例如，`Number` 是 `Number?` 的子类
+
+#### Unit
+
+`Unit` 类型可以作为没有返回值的函数的返回类型
+
+```kotlin
+fun logCurrentState(): Unit { 
+    println("Current state of a program: $state")
+}
+```
+
+如果一个函数未指定返回值，则编译器会为其返回 `Unit`
+
+```kotlin
+fun updateState(state: State) { 
+    logCurrentState()
+    this.state = state
+    logCurrentState()
+}
+
+val result: Unit = logCurrentState()
+```
+
+#### Nothing
+
+`Nothing` 在 `Kotlin` 继承树的最底层
+
+`Nothing` 是一个没有实例的类型
+
+#### `Kotlin` 继承关系图
+
+![](/Users/giszbs/Documents/notes/Kotlin/img/type-all.png)
+
+## 流程控制
+
+### if 表达式
+
+**`Kotlin` 中 `if` 是表达式不是语句**
+
+#### if-case
+
+如果表达式是 `true` 则执行语句块`{}`中的代码，否则跳过
+
+```kotlin
+if (expression) {
+    // body: do something
+}
+```
+
+#### if-else-case
+
+如果表达式为 `true` 则执行第一个代码块，否则执行第二个代码块
+
+```kotlin
+if (expression) {    
+    // do something
+} else {
+    // do something else
+}
+```
+
+#### if-else-if-case
+
+```kotlin
+if (expression0) {
+    // do something
+} else if (expression1) {
+    // do something else 1
+		// ...
+} else if (expressionN) {
+    // do something else N
+}
+```
+
+#### if 表达式
+
+与其他语言（例如`Java`，`Python`，`C＃`）不同，`Kotlin`中的`if`是表达式而不是语句，他可以返回一个计算结果，注意，这里的**返回结果必须是代码块的最后一个表达式**
+
+**如果要将`if`用作表达式，则它必须有一个`else`分支**
+
+```kotlin
+// 计算最大值，打印然后将该值赋值给 max
+val max = if (a > b) {
+    println("Choose a")
+    a
+} else {
+    println("Choose b")
+    b
+}
+```
+
+如果语句块仅包含一个语句，则可以省略花括号：
+
+```kotlin
+val max = if (a > b) a else b
+```
+
+### When 表达式
+
+`when`表达式根据变量的值执行不同的操作，可以代替多分支**if表达式**
+
+```kotlin
+import java.util.*
+
+fun main(args: Array<String>){
+    val scanner = Scanner(System.`in`)
+
+    val a = scanner.nextInt()
+    val op = scanner.next()
+    val b = scanner.nextInt()
+
+    when (op) {
+        "+" -> println(a + b)
+        "-" -> println(a - b)
+        "*" -> println(a * b)
+        else -> println("Unknown operator")
+    }
+}
+```
+
+如果需要以同样的方式处理相同的情况，在一个分支中使用逗号组合
+
+```kotlin
+when (op) {
+    "+", "plus" -> {
+        val sum = a + b
+        println(sum)
+    }
+    "-", "minus" -> {
+        val diff = a - b
+        println(diff)
+    }
+    "*", "times" -> {
+        val product = a * b
+        println(product)
+    }
+    else -> println("Unknown operator")
+}
+```
+
+#### 作为表达式
+
+`when`可以用作返回结果的表达式，此时每个分支都将返回值，并且必须有 `else` 分支
+
+```kotlin
+val result = when (op) {
+    "+" -> a + b
+    "-" -> a - b
+    "*" -> a * b
+    else -> "Unknown operator"
+}
+println(result)
+```
+
+这里的**返回结果必须是代码块的最后一个表达式** ，即是分支的最后一行
+
+检测是否属于范围
+
+```kotlin
+when (n) {
+    0 -> println("n is zero")
+    in 1..10 -> println("n is between 1 and 10 (inclusive)")
+    in 25..30 -> println("n is between 25 and 30 (inclusive)")
+    else -> println("n is outside a range")
+}
+```
+
+#### 没有参数的 when
+
+使用不带参数的 `when` 结构，此时每个分支的条件都是一个简单的 `boolean 表达式` ，当分支的条件为 `true` 时执行该分支，如果有多个分支的条件都是 `true` 则只执行第一个分支
+
+```kotlin
+import java.util.*
+
+fun main(args: Array<String>){
+    val scanner = Scanner(System.`in`)
+    val n = scanner.nextInt()
+    
+    when {
+        n == 0 -> println("n is zero")
+        n in 100..200 -> println("n is between 100 and 200")
+        n > 300 -> println("n is greater than 300")
+        n < 0 -> println("n is negative")
+        // else-branch is optional here
+    }
+}
+```
+
+### 重复代码块
+
+#### `repeat` 循环
+
+最简单的循环就是使用 `repeat(n)` 并在大括号中`{...}` 写上需要循环的代码，`n` 是整数：表示循环的次数，如果`n`小于或等于零，则将忽略循环
+
+```kotlin
+repeat(n) {
+    // statements
+}
+```
+
+例如
+
+```kotlin
+// 循环打印3行 Hello
+fun main(args: Array<String>) {
+    repeat(3) {
+        println("Hello")
+    }
+}
+```
+
+### for 循环
+
+`Kotlin` 提供了`for`循环遍历范围、数组和集合
+
+```kotlin
+for (element in source) {
+    // body of loop
+}
+
+for (element in array) {
+    // body of loop
+}
+```
+
+#### 遍历 range
+
+```kotlin
+for (i in 1..4) {
+    println(i)    
+}
+
+for (ch in 'a'..'c') {
+    println(ch)
+}
+```
+
+#### 反向循环
+
+```kotlin
+for (i in 4 downTo 1) {
+    println(i)
+}
+```
+
+#### 排除上限
+
+使用 `until` 排除上限
+
+```kotlin
+// 循环打印数字1到3
+for (i in 1 until 4) {
+    println(i)
+}
+```
+
+#### 使用步进 step
+
+如果没有指定 `step`，则 `step` 是 `1`
+
+```kotlin
+for (i in 1..7 step 2) {
+    println(i)
+}
+```
+
+反向循环也可使用 `step`
+
+```kotlin
+for (i in 7 downTo 1 step 2) {
+    println(i)
+}
+```
+
+### while 循环
+
+
+
+
+
+
+
+
 
 ## 函数
 
@@ -744,6 +1479,346 @@ println(result) // kotlin.Unit
 ```
 
 这里返回一个特殊的对象 `Unit`, 意思是：没有结果
+
+### 声明函数
+
+函数是将指令组合在一起以执行操作的序列，即它是一种子程序。函数具有名称
+
+```kotlin
+fun functionName(p1: Type1, p2: Type2, ...): ReturnType {
+    // body
+    return result
+}
+```
+
+函数具有以下组件：
+
+- 遵循与变量名称相同的规则和建议的名称
+- 括号中代表输入数据的参数列表。每个参数都有一个名称和冒号`:`分隔的类型。所有参数用逗号分隔`,`
+- 返回值的类型（可选）
+- 包含要执行的语句和表达式的主体
+- 关键字`return`后跟的结果（也是可选的）
+
+有两种方法可以声明不返回任何值的函数（省略返回值类型，则默认返回值类型是 `Unit`）：
+
+- 不指定返回类型（推荐使用）
+
+```kotlin
+/**
+ * The function prints the values of a and b
+ */
+fun printAB(a: Int, b: Int) {
+    println(a)
+    println(b)
+}
+```
+
+- 指定特殊类型`Unit`作为返回类型：
+
+```kotlin
+/**
+ * The function prints the sum of a and b
+ */
+fun printSum(a: Int, b: Int): Unit {
+    println(a + b)
+}
+```
+
+#### 单个表达式函数
+
+如果函数返回单个表达式，则可以省略大括号，此时返回值类型可以省略（`Kotlin` 会推断）
+
+```kotlin
+fun sum(a: Int, b: Int): Int = a + b
+fun sum(a: Int, b: Int) = a + b // Int
+
+fun sayHello(): Unit = println("Hello")
+fun sayHello() = println("Hello") // Unit
+
+fun isPositive(number: Int): Boolean = number > 0
+fun isPositive(number: Int) = number > 0 // Boolean
+```
+
+### 默认参数
+
+#### 默认参数函数
+
+`Kotlin` 可以在声明中为函数的参数设置**默认值**。要调用此类函数，可以忽略具有默认值的参数，也可以通过所有参数以常规方式使用
+
+```kotlin
+fun printLine(line: String = "", end: String = "\n") = print("$line$end")
+
+fun main(args: Array<String>) {
+    printLine("Hello, Kotlin", "!!!") // prints "Hello, Kotlin!!!"
+    printLine("Kotlin") // prints "Kotlin" with an ending
+    printLine() // prints an empty line like println()
+}
+```
+
+我们只需要在类型后面跟 `=` 号并赋值即可
+
+#### 混合使用常规参数和默认参数
+
+可以在函数的声明中混合使用默认参数和常规参数
+
+```kotlin
+fun findMax(n1: Int, n2: Int, absolute: Boolean = false): Int {
+    val v1: Int
+    val v2: Int
+
+    if (absolute) {
+        v1 = Math.abs(n1)
+        v2 = Math.abs(n2)
+    } else {
+        v1 = n1
+        v2 = n2
+    }
+
+    return if (v1 > v2) n1 else n2
+}
+
+fun main() {
+    println(findMax(11, 15)) // 15
+    println(findMax(11, 15, true)) // 15
+    println(findMax(-4, -9)) // -4
+    println(findMax(-4, -9, true)) // -9
+}
+```
+
+#### 默认参数类型
+
+默认参数可以是：常数、变量、另一个命名参数或者函数
+
+```kotlin
+fun sum2(a: Int, b: Int = a) = a + b
+ 
+sum2(1)    // 1 + 1
+sum2(2, 3) // 2 + 3
+```
+
+### 命名参数
+
+调用具有参数的函数时，可以通过这些参数的名称传递参数
+
+`命名参数` 必须在位置参数的后面，如果全部是`命名参数`则位置随便
+
+```kotlin
+fun calcEndDayAmount(startAmount: Int, ticketPrice: Int, soldTickets: Int) =
+        startAmount + ticketPrice * soldTickets
+
+// 位置参数方式调用
+val amount = calcEndDayAmount(1000, 10, 500)  // 6000
+
+// 命名参数方式调用
+val amount = calcEndDayAmount(ticketPrice = 10, soldTickets = 500,startAmount = 1000)  // 6000
+
+// 位置参数和命名参数混合调用
+val amount = calcEndDayAmount(1000, ticketPrice = 10, soldTickets = 500)  // 6000
+```
+
+### 将函数用做对象
+
+How to store a function as an object and to use it
+
+只要函数的类型相同，则认为是相同的类型
+
+`Kotlin` 中的一等公民条件如下：
+
+1. 可以存储为变量
+2. 可以被函数返回
+3. 可以作为参数传递给函数
+4. 不要依赖他们的名字
+5. 可以在程序**运行时**创建
+
+`Kotlin` 中函数是一等公民
+
+#### 函数类型
+
+`Kotlin` 内置支持函数类型
+
+```kotlin
+(parameters types) -> return value type
+```
+
+小括号中的参数类型是用逗号分隔的
+
+```kotlin
+fun sum(a: Int, b: Int): Int = a + b
+// 上面函数的类型如下
+// (Int, Int) -> Int
+```
+
+#### 函数引用
+
+`Kotlin` 允许获取函数的引用
+
+要获取一个对顶级函数的引用，只需要在函数名称前加上双引号(`::`)不需要需要小括号和参数，例如：`::sum` 将获得一个对 `(Int, Int) -> Int` 函数类型的引用
+
+```kotlin
+val sumObject = ::sum
+```
+
+`sumObject` 存储的是 `sum` 函数的引用，它具有 `sum` 函数的类型
+
+还可以显示指定 `sumObject` 的类型
+
+```kotlin
+val sumObject: (Int, Int) -> Int = ::sum
+```
+
+这样就可以通过以下方式调用 `sum` 函数
+
+```kotlin
+sumObject(10, 20)
+```
+
+#### 返回其他函数引用
+
+创建返回函数引用的函数
+
+```kotlin
+fun getRealGrade(x: Double) = x
+fun getGradeWithPenalty(x: Double) = x - 1
+
+fun getScoringFunction(isCheater: Boolean): (Double) -> Double {
+    if (isCheater) {
+        return ::getGradeWithPenalty
+    }
+
+    return ::getRealGrade
+}
+```
+
+#### 函数引用作为参数传递
+
+可以创建将其他函数作为参数的函数
+
+```kotlin
+fun applyAndSum(a: Int, b: Int, transformation: (Int) -> Int): Int {
+    return transformation(a) + transformation(b)
+}
+
+fun square(x: Int) = x * x
+applyAndSum(1, 2, ::square)  // returns 5 = 1 * 1 + 2 * 2
+```
+
+这里 `transformation` 参数接收一个 `(Int) -> Int` 类型的函数
+
+```kotlin
+fun isNotDot(c: Char): Boolean = c != '.'
+val originalText = "I don't know... what to say..."
+val textWithoutDots = originalText.filter(::isNotDot)
+// "I don't know what to say"
+```
+
+### Lambda表达式
+
+在运行时创建没有名字的函数
+
+#### 没有名字的函数
+
+`Kotlin` 中创建没有名字的函数：匿名函数、Lambda表达式
+
+- 匿名函数：`fun(arguments): ReturnType { body }` 
+- lambda表达式：`{ arguments -> body }` 
+
+```kotlin
+// 匿名函数
+val mul1 = fun(a: Int, b: Int): Int {
+    return a * b
+}
+
+// lambda表达式
+val mul2 = { a: Int, b: Int -> a * b }
+
+println(mul1(2, 3))  // prints "6"
+println(mul2(2, 3))  // prints "6" too
+```
+
+不带参数的 `lambda表达式` 定义时不需要写箭头符号 `{ body }`
+
+`lambda` 表达式只有一个参数时，可以使用 `it` 省略参数
+
+```kotlin
+val originalText = "I don't know... what to say..."
+originalText.filter({ c -> c != '.' })
+originalText.filter() { c -> c != '.' }
+originalText.filter { c -> c != '.' }
+originalText.filter { it != '.' }
+```
+
+如果 `lambda表达式` 有多行，则 `lambda表达式` 内的最后一行是其返回值
+
+```kotlin
+val textWithoutSmallDigits = originalText.filter {
+    val isNotDigit = !it.isDigit()
+    val stringRepresentation = it.toString()
+
+    isNotDigit || stringRepresentation.toInt() >= 5
+}
+```
+
+`lambda表达式` 也可以使用 `return` 返回，此时返回语句必须这样写：`return@标签名称` ，`标签名称`通常是传递 `lambda` 的函数名
+
+```kotlin
+val textWithoutSmallDigits = originalText.filter {
+    if (!it.isDigit()) {
+      	// 这里的 filter 是上面函数的名称
+        return@filter true
+    }
+        
+    it.toString().toInt() >= 5
+}
+```
+
+#### 捕获变量
+
+如果 `lambda` 使用在 `lambda表达式` 之外声明的变量，则表示 `lambda` **捕获**了该变量
+
+在捕获值的情况下，`lambda`可以读取它。如果捕获了变量，则`lambda`和外部代码可以对其进行更改，并且这些更改将在`lambda`和外部代码中可见
+
+```kotlin
+var count = 0
+
+val changeAndPrint = {
+    ++count
+    println(count)
+}
+
+println(count)    // 0
+changeAndPrint()  // 1
+count += 10
+changeAndPrint()  // 12
+println(count)    // 12
+```
+
+### main() 函数
+
+`main()函数` 是程序入口函数
+
+```kotlin
+// 不带参数的 main 函数
+fun main() {}
+
+// 带参数的 main 函数
+fun main(args: Array<String>) {}
+```
+
+`main` 函数也是可以带参数的，参数的名字约定为 `args`且类型是字符串数组
+
+使用`main()`参数，我们将一些其他外部数据传输到程序本身
+
+如果程序中**同时**包含**带参数和不带参数的 `main` 函数**，则程序会将带参数的`main`函数作为入口函数调用
+
+#### 命令行参数
+
+要将命令行参数发送到应用程序，需要一个预编译的程序
+
+```shell
+# 使用 jvm 在命令行运行程序
+# args 是由空格分割的参数列表
+$ java -jar filename.jar args
+```
 
 ## 输入输出
 
@@ -802,21 +1877,21 @@ val string = scanner.next()   // read a string, i.e. "Hello" 读取一个单词
 
 常用函数如下：
 
-- **Math.abs(...)**返回其参数的绝对值
-- **Math.sqrt(...)**返回其参数的平方根
-- **Math.cbrt(...)**返回其参数的立方根
-- **Math.pow(...，...)**将第一个参数的值提高为第二个参数的幂
-- **Math.log(...)**返回其参数的自然对数
-- **Math.min(...，...)**返回两个参数的较小值
-- **Math.max(...，...)**返回两个参数中的较大者
-- **Math.toRadians(...)**将以度为单位的角度转换为以弧度为单位(近似)的角度；
-- **Math.sin(...)**返回以弧度为单位的给定角度的三角正弦值
-- **Math.cos(...)**返回以弧度为单位的给定角度的三角余弦值
-- **Math.tan(...)**返回以弧度为单位的给定角度的三角正切值
-- **Math.random()**返回一个带正号的双精度值，大于或等于0.0且小于1.0
-- **Math.floor(...)**返回小于或等参数的最大整数（返回类型是 Double）
-- **Math.ceil(...)**返回大于或等于参数的整数（返回类型是 Double）
-- **Math.round(...)**返回最接近参数的整数（根据算术规则舍入）
+- **Math.abs(...)** 返回其参数的绝对值
+- **Math.sqrt(...)** 返回其参数的平方根
+- **Math.cbrt(...)** 返回其参数的立方根
+- **Math.pow(...，...)** 将第一个参数的值提高为第二个参数的幂
+- **Math.log(...)** 返回其参数的自然对数
+- **Math.min(...，...)** 返回两个参数的较小值
+- **Math.max(...，...)** 返回两个参数中的较大者
+- **Math.toRadians(...)** 将以度为单位的角度转换为以弧度为单位(近似)的角度；
+- **Math.sin(...)** 返回以弧度为单位的给定角度的三角正弦值
+- **Math.cos(...)** 返回以弧度为单位的给定角度的三角余弦值
+- **Math.tan(...)** 返回以弧度为单位的给定角度的三角正切值
+- **Math.random()** 返回一个带正号的双精度值，大于或等于0.0且小于1.0
+- **Math.floor(...)** 返回小于或等参数的最大整数（返回类型是 Double）
+- **Math.ceil(...)** 返回大于或等于参数的整数（返回类型是 Double）
+- **Math.round(...)** 返回最接近参数的整数（根据算术规则舍入）
 
 常量:
 
