@@ -1461,13 +1461,1096 @@ for (i in 7 downTo 1 step 2) {
 
 ### while 循环
 
+`while` 循环有：`while` 和 `do..while`
 
+#### while 循环
 
+`while`循环中，先判定测试条件，如果条件为`true`，则执行块中的语句。重复此操作，直到条件变为`false`
 
+```kotlin
+while (condition) {
+    // body: do something repetitive
+}
+```
 
+#### do..while循环
 
+在`do..while`循环中，首先执行主体，然后才测试条件。如果条件为`true`，则该块内的语句将再次执行。重复此操作，直到条件变为为止`false`
 
+```kotlin
+do {
+    // body: do something
+} while (condition)
+```
 
+#### label、break,、continue、return
+
+##### Label
+
+`label` 是尾部加上`@`符号的标识符: `loop@、kotlin@`
+
+```kotlin
+loop@ for (i in 1..10) {
+    // do something
+}
+```
+
+##### break
+
+用户终止当前循环
+
+`break`后面跟`label`，则会终止使用该标签的循环
+
+```kotlin
+// 下面语句的外层循环只会执行一次就被内层的 break@loop 终止，所以该段代码输出
+// i = 1, j = 1
+// i = 1, j = 2
+// i = 1, j = 3
+loop@ for (i in 1..3) { 
+    for (j in 1..3) {
+        println("i = $i, j = $j")   
+        if (j == 3) break@loop  
+    }  
+}
+```
+
+##### cotinue
+
+`cotinue` 停止执行后面的语句进入下轮循环
+
+`cotinue`后跟 `label`, 则停止执行后面的语句，从使用标签的地方重新开始执行
+
+```kotlin
+loop@ for (i in 1..3) {
+    for (j in 1..3) {
+        for (k in 1..3) {
+            if (k == 2) continue@loop
+            println("i = $i, j = $j, k = $k")
+        }
+    }
+}
+
+// i = 1, j = 1, k = 1
+// i = 2, j = 1, k = 1
+// i = 3, j = 1, k = 1
+```
+
+##### return
+
+返回语句
+
+## 集合
+
+集合分为可变集合和不可变集合
+
+`Kotlin` 的集合有 `list，set、map`，这三个都有可变和不可变形式
+
+- `List` 以指定顺序存储元素，并提供对它们的索引访问
+- `Set` 无序不重复元素集合
+- `Map`存储**键值**对键是唯一的，但是不同的键可以与相等的值
+
+`Set` 和 `Map` 中如果插入已经存在的元素，则会覆盖前面的值
+
+### 可变 map
+
+`MutableMap<K, V>` 中的键值对可以使用任何类型的对象，这个`MutableMap` 是有序的
+
+#### 创建
+
+```kotlin
+// 定义空的map必须指定类型
+val marathon = mutableMapOf<Int, String>()
+val marathon = mutableMapOf(1 to "John Doe", 2 to "Marty McFly", 3 to "Marie Curie")
+```
+
+#### 访问元素
+
+```kotlin
+// 添加元素
+val mara = mutableMapOf<String, String>()
+mara["aa"] = "hello"
+mara["bb"] = "kotlin"
+// 此时map mara 的内容是：{aa=hello, bb=kotlin}
+
+// 获取元素
+val t = mara["aa"]
+```
+
+#### 删除元素
+
+```kotlin
+// 根据key删除
+mara.remove("aa")
+
+// 根据 key-value 删除，此时需要key和value都相同才会删除
+// 此操作不会删除元素，因为 aa=hello
+mara.remove("aa", "kotlin")
+// 此时才会删除
+mara.remove("aa", "hello")
+
+// 清空map
+mara.clear()
+```
+
+#### 元素是否存在
+
+使用 `containsValue()` 和 `containsKey()` 方法检查是否存在
+
+#### 遍历map
+
+```kotlin
+// 每个 entry 中都包含 key 和 value
+for (entry in marathon) {
+    println(entry.value)
+}
+
+for ((key, value) in marathon) {
+    println(value)
+}
+```
+
+### List
+
+#### 不可变 List
+
+`List` 是有序的不可变集合（大小和内容都不能更改）
+
+`List`是**泛型**类型。可以使用`listOf<E>`进行初始化，其中`E`是列表中包含的元素的类型
+
+##### 创建
+
+```kotlin
+val textUsMethod = listOf("SMS", "Email")
+val textUsMethod = listOf<String>("SMS", "Email")
+
+// 创建空list
+val staff = emptyList<String>()
+```
+
+#### 可变 List
+
+##### 创建
+
+`MutableList` 有序并按顺序存储元素，可变（添加和删除元素）
+
+```kotlin
+val places = mutableListOf<String>("Paris", "Moscow", "Tokyo")
+places.add("Saint-Petersburg")
+println(places) // output: [Paris, Moscow, Tokyo, Saint-Petersburg]
+```
+
+如果创建一个空的 `MutableList`，则必须指定类型：
+
+```kotlin
+val cars = mutableListOf<String>()
+println(cars) // output: []
+```
+
+##### 将`不可变List` 转换为 `可变List`
+
+```kotlin
+val cars = listOf("Ford", "Toyota").toMutableList()
+cars.add("Tesla")
+println(cars) // output: [Ford, Toyota, Tesla]
+```
+
+##### 添加和替换
+
+- `add(element)` 在列表末尾添加元素
+- `set(index, element)` 将指定位置的元素替换为指定元素
+- `addAll(elements)` 将指定集合的所有元素添加到列表的末尾
+
+```kotlin
+val finalList = mutableListOf("Milk", "Cheese", "Coke")
+finalList.add("Chips")
+finalList.set(0, "Water")
+println(finalList) // output: [Water, Cheese, Coke, Chips]
+```
+
+##### 删除元素
+
+- `removeAt(index)` 删除指定索引处的元素
+- `remove(element)` 删除指定的元素
+- `clear()` 从当前集合中删除所有元素
+
+```kotlin
+val products = mutableListOf("Milk", "Cheese", "Coke")
+
+products.removeAt(0)
+println(products) // output: [Cheese, Coke]
+
+products.remove("Coke")
+println(products) // output: [Cheese]
+
+products.clear()
+println(products) // output: []
+```
+
+## 面向对象
+
+### 定义类
+
+使用关键字 `class` 定义类
+
+```kotlin
+class Emptiness {
+    // empty body
+}
+```
+
+当一类的**主体**为**空时**，可以省略大括号
+
+```kotlin
+class Emptiness
+```
+
+#### 创建对象
+
+创建对象只需要类名和小括号
+
+```kotlin
+val empty: Emptiness = Emptiness()
+val empty = Emptiness()
+```
+
+#### 类的属性
+
+类的属性具有明确的类型
+
+```kotlin
+class Patient {
+    var name: String = "Unknown"
+    var age: Int = 0
+    var height: Double = 0.0
+}
+```
+
+#### 访问属性
+
+```kotlin
+var patient = Patient()
+println(patient.name) // prints "Unknown"
+println(patient.age)  // prints "0"
+```
+
+#### 修改属性
+
+```kotlin
+class Patient {
+    var name: String = "Unknown"
+    var age: Int = 0
+    var height: Double = 0.0
+}
+
+fun main() {
+    val john = Patient()
+    john.name = "John"
+    john.age = 30
+    john.height = 180.0
+
+    val alice = Patient()
+    alice.name = "Alice"
+    alice.age = 22
+    alice.height = 165.0
+
+    println("${john.name}: ${john.age} yrs, ${john.height} cm")
+    println("${alice.name}: ${alice.age} yrs, ${alice.height} cm")
+}
+```
+
+### 构造函数
+
+创建对象时，将调用构造函数
+
+#### 默认构造函数
+
+每个类都必须有一个构造函数，如果未明确定义，则编译器会自动生成一个**默认构造函数**，该**构造函数**仅创建一个对象，并且内部没有任何逻辑
+
+#### 主构造函数
+
+主构造函数不包含任何代码，它仅仅是初始化一个类的实例和其属性
+
+定义主构造函数只需要在类名称后的小括号中加上初始化参数
+
+```kotlin
+class Size(width: Int, height: Int) {
+    val width: Int = width
+    val height: Int = height
+    val area: Int = width * height
+}
+```
+
+定义构造函数一般在参数之前需要加上关键字 `constructor`，但是主构造函数可以省略
+
+```kotlin
+// 主构造函数不省略关键字的定义
+class Size constructor(width: Int, height: Int) {
+    val width: Int = width
+    val height: Int = height
+    val area: Int = width * height
+}
+```
+
+可以将简单的属性放在主构造函数中，在类主体中可省略
+
+```kotlin
+class Size(val width: Int, val height: Int) {
+    val area: Int = width * height
+}
+```
+
+#### 默认值和命名参数
+
+主构造函数中默认值的设置方式与类主体中的设置方式相同
+
+```kotlin
+class Size(var width: Int = 1, var height: Int = 1) {
+    val area: Int = width * height
+}
+```
+
+创建类的实例时，可以提供不带属性名称的值，也可以使用**命名参数**：
+
+```kotlin
+val size1 = Size(3, 5) // width == 3, height == 5
+val size2 = Size(width = 3, height = 5) // width == 3, height == 5
+val size3 = Size(height = 5, width = 3) // width == 3, height == 5
+val sizeHigh = Size(height = 10) // width == 1, height == 10
+```
+
+#### 单行类
+
+如果除主构造函数中的成员之外没有其他类成员，则可以省略空花括号
+
+```kotlin
+class Size(val width: Int, val height: Int)
+```
+
+#### 初始化
+
+使用 `init` 关键字定义**初始化代码块** 
+
+此时`init`代码块表示主构造函数的扩展代码块，即`初始化代码块`是主构造函数的一部分
+
+```kotlin
+class Size(_width: Int, _height: Int) {
+    var width: Int = 0
+    var height: Int = 0
+
+    init {
+        width = if (_width >= 0) _width else {
+            println("Error, the width should be a non-negative value")
+            0
+        }
+        height = if (_height >= 0) _height else {
+            println("Error, the height should be a non-negative value")
+            0
+        }
+    }
+}
+```
+
+类主体中可能有几个初始化程序块。在这种情况下，属性初始化器和`init`块按其出现顺序执行：
+
+```kotlin
+class Size(_width: Int, _height: Int) {
+    // 1: the width property is initialized
+    val width = _width
+
+    // 2: 1st init block is executed
+    init {
+        println("First initializer block that prints the width $width")
+    }
+
+    // 3: the height property is initialized
+    val height = _height
+
+    // 4: 2nd init block is executed
+    init {
+        println("Second initializer block that prints the height $height")
+    }
+
+    // 5: the area property is initialized
+    val area = width * height
+}
+```
+
+### 成员函数
+
+成员函数看起来像放在类主体中的函数
+
+```kotlin
+class MyClass {
+    fun print() = println("Hello from print")
+}
+```
+
+### 扩展函数
+
+扩展函数用于扩展已有函数的功能，`Kotlin` 中的扩展函数是一个语法糖
+
+```kotlin
+fun repeated(string: String): String = string + string
+repeated("ha")  // returns "haha"
+
+// 扩展 repeated 函数
+fun String.repeated(): String = this + this
+
+// 现在可以这样调用
+"ha".repeated()
+```
+
+#### 特性
+
+- 扩展函数的语法和定义顶级函数的语法一样（只需要在要扩展的类的名字后面加上点`.` 和函数名称，被扩展的类叫做接收类型）
+- 要访问当前函数的对象使用 `this` 关键字
+- 调用扩展函数就像调用对象的成员函数一样
+
+#### 扩展函数和成员函数
+
+从调用的方式上是无法区分扩展函数和成员函数的
+
+```kotlin
+class A {
+    fun member() = println("hi from member")
+}
+
+fun A.extension() = println("hi from extension")
+```
+
+上面两个函数可以通过相同的方式调用: `A().member()` 和 `A().extension()`
+
+给类添加一个已经存在的扩展函数：
+
+1. 如果该函数和扩展函数相同的无法编译
+2. 如果该函数和成员函数相同则可以编译，但是调用的时候执行的成员函数不是新增加的扩展函数
+
+例如：添加扩展函数 `fun A.member() = println("bye from not member")` ，调用 `A().member()` 时执行的结果是: `hi from member`
+
+如果需要添加相同的扩展函数需要改变该函数的签名，例如：传递不同的参数
+
+### 访问属性
+
+#### 默认getter
+
+```kotlin
+class Client {
+    val name = "Unknown"
+}
+
+val client = Client()
+```
+
+当我们执行 `client.name` 时，实际上访问了一个特殊 `get()` 函数，该函数叫 `getter` ，实际上完整的代码应该如下：
+
+```kotlin
+class Client {
+    val name = "Unknown"
+        get() = field
+}
+```
+
+`Kotlin`中的每个属性都有自己的**backing field**，其中包含可以使用特殊关键字访问的属性值`field`，`field` 关键字保存的是当前属性的值
+
+如果要改变 `get()` 函数的逻辑就需要实现自己的 `get()` 函数
+
+#### 自定义 getter
+
+```kotlin
+class Client {
+    var name: String = "Unknown"
+    var age: Int = 18
+    val info: String
+        get() {
+            return "name = $name, age = $age"
+        }
+}
+
+val client = Client()
+println(client.info) // name = Unknown, age = 18
+client.name = "Lester"
+client.age = 20
+println(client.info) // name = Lester, age = 20
+```
+
+#### 默认 setter
+
+当设置属性的值时，实际上调用的是特殊的 `set()` 函数，这个`set()` 函数是 `Kotlin` 默认生成的
+
+```kotlin
+class Client {
+    var name = "Unknown"
+        set(value) {
+            field = value
+        }
+}
+```
+
+#### 自定义 setter
+
+```kotlin
+class Client {
+    var name = "Unknown"
+    var age = 18
+        set(value) {                      
+            field = if (value < 0) {
+                println("Age cannot be negative. Set to $defaultAge")
+                defaultAge
+            } else
+                value
+        }
+    val defaultAge = 18
+}
+
+val client = Client()
+client.age = -1      // Age cannot be negative. Set to 18.
+println(client.age)  // 18
+```
+
+### 继承
+
+#### 打开继承
+
+通常创建的 `kotlin` 类是 `final` 类型的，即不能被继承，因为在 `kotlin` 中默认创建的类都不能被继承
+
+```kotlin
+class Book(val pages: Int, val author: String)
+```
+
+如果一个类需要被继承那么只需要加上 `open` 关键字即可
+
+```kotlin
+open class Book(val pages: Int, val author: String)
+```
+
+#### 继承
+
+```kotlin
+class Comics(pages: Int, author: String, cost: Float) : Book(pages, author, cost)
+```
+
+这里将 `Comics` 类的所有参数直接传递给了`Book`主构造函数
+
+#### 覆写函数
+
+默认情况 `Kotlin` 中类的函数也是不能被重写的，如果要重写父类的函数，需要在允许被重写的函数前面加上关键字 `open`
+
+```kotlin
+open class Transport(val cost: Int) {
+    open fun getFullInfo(): String {
+        return "$$cost cost"
+    }
+
+    fun getTax(): String {
+        return "$${(cost * 0.25).roundToInt()} tax"
+    }
+}
+```
+
+上面的 `getFullInfo()` 函数可以被子类重写，而 `getTax()` 不能被子类重写
+
+重写父类函数，需要在函数前面加上关键字 `override`，如果不加将无法编译
+
+要调用父类的同名函数，可使用关键字 `super`
+
+默认情况下，`Kotlin`中的任何重写函数都是 `open` 的
+
+```kotlin
+open class Ship(cost: Int, val color: String) : Transport(cost) {
+    override fun getFullInfo(): String {
+        return super.getFullInfo() + ", $color color"
+    }
+}
+```
+
+### object 声明 - 单例模式
+
+使用 `object` 关键字声明的类是单例模式
+
+当使用 `object` 关键字声明类时不能有构造函数，因为 `Kotlin` 会自动创建构造函数
+
+```kotlin
+object PlayingField {
+    fun getAllPlayers(): Array<Player> {
+        /* ... */
+    }
+  	
+    fun isPlayerInGame(player: Player): Boolean {
+        /* ... */
+    }
+}
+```
+
+要获得`object`单例模式的实例，只需要直接使用类名称即可
+
+```kotlin
+fun startNewGameTurn() {
+    val players = PlayingField.getAllPlayers()
+    if (players.length < 2) {
+        return println("The game cannot be continued without players")
+    }
+    for (player in players) {
+        nextPlayerTurn(player)
+    }
+}
+
+fun nextPlayerTurn(player: Player) {
+    if (!PlayingField.isPlayerInGame(player)) {
+        return println("Current player lost. Next...")
+    }
+    /* Player actions here */
+}
+```
+
+#### 单例模式嵌套
+
+如果某个类的部分属性是所有实例公用的，那么此时可以使用嵌套 `object` 
+
+```kotlin
+class Player(val id: Int) {
+    object Properties {
+        /* Default player speed in playing field - 7 cells per turn */
+        val defaultSpeed = 7
+
+        fun calcMovePenalty(cell: Int): Int {
+            /* calc move speed penalty */
+        }
+    }
+}
+
+/* prints 7 */
+println(Player.Properties.defaultSpeed)
+```
+
+### Companion object 伴生对象
+
+`companion object 伴生对象` 适用于存储一个公共属性并且需要在类内部定义
+
+```kotlin
+class Player(val id: Int) {
+    companion object Properties {
+        /* Default player speed in playing field - 7 cells per turn */
+        val defaultSpeed = 7
+
+        fun calcMovePenalty(cell: Int): Int {
+            /* calc move speed penalty */
+        }
+    }
+}
+
+/* prints 7 */
+println(Player.Properties.defaultSpeed)
+```
+
+`companion object` 可以省略名称
+
+```kotlin
+class Player(val id: Int) {
+    companion object {
+        /* Default player speed in playing field - 7 cells per turn */
+        val defaultSpeed = 7
+
+        fun calcMovePenalty(cell: Int): Int {
+            /* calc move speed penalty */
+        }
+    }
+}
+
+/* prints 7 */
+println(Player.defaultSpeed)
+```
+
+如果省略 `companion object` 的名字，我们还可以使用默认名称：`Companion` 访问
+
+```kotlin
+/* prints 7 too */
+println(Player.Companion.defaultSpeed)
+```
+
+#### 限制条件
+
+- 每个类只能有一个 `companion object`
+- `object 单例` 和 `companion object` 内部不能有 `companion object`
+
+### 枚举
+
+`Kotlin`的`Enum`是用于存储常量的容器
+
+使用 `enum` 创建枚举类，枚举类里面的每一个项都是枚举类型的实例
+
+```kotlin
+enum class Rainbow {
+    RED, ORANGE, YELLOW, GREEN, BLUE, INDIGO, VIOLET
+}
+```
+
+通过构造函数进行初始化
+
+```kotlin
+enum class Rainbow(val color: String) {
+    RED("Red"),
+    ORANGE("Orange"),
+    YELLOW("Yellow"),
+    GREEN("Green"),
+    BLUE("Blue"),
+    INDIGO("Indigo"),
+    VIOLET("Violet")
+}
+```
+
+#### 方法和属性
+
+1. `name` 获取枚举实例的名称
+
+   ```kotlin
+   val color: Rainbow = Rainbow.RED
+   println(color.name)	// RED
+   ```
+
+2. `ordinal` 枚举实例的位置（定义枚举时的序号，该序号从`0`开始）
+
+   ```kotlin
+   val color: Rainbow = Rainbow.GREEN
+   println(color.ordinal)	// 3
+   ```
+
+3. `values()`返回所有`Enum`实例的数组
+
+4. `valueOf()`按 `name` 返回`Enum`实例，此方法区分大小写，如果找不到则会抛出异常
+
+   ```kotlin
+   println(Rainbow.valueOf("RED"))	// RED
+   ```
+
+#### 扩展
+
+要扩展枚举类，需要使用 `companion object` 关键字
+
+```kotlin
+enum class Rainbow(val color: String, val rgb: String) {
+    RED("Red", "#FF0000"),
+    ORANGE("Orange", "#FF7F00"),
+    YELLOW("Yellow", "#FFFF00"),
+    GREEN("Green", "#00FF00"),
+    BLUE("Blue", "#0000FF"),
+    INDIGO("Indigo", "#4B0082"),
+    VIOLET("Violet", "#8B00FF"),
+    NULL("", "");
+
+    companion object {
+        fun findByRgb(rgb: String): Rainbow {
+            for (enum in Rainbow.values()) {
+                if (rgb == enum.rgb) return enum
+            }
+            return NULL
+        }
+    }
+
+    fun printFullInfo() {
+        println("Color - $color, rgb - $rgb")
+    }
+}
+
+println(Rainbow.findByRgb("#FF0001"))
+```
+
+### 次要构造函数
+
+如果定义了`主要构造函数`，则`次要构造函数`必须显式调用 `主要构造函数` 
+
+使用 `constructor` 关键字创建次要构造函数，多个次要构造函数必须具有唯一的签名（不同参数）
+
+```kotlin
+class Size {
+    var width: Int = 0
+    var height: Int = 0
+
+    constructor(_width: Int, _height: Int) {
+        this.width = _width
+        this.height = _height
+    }
+  
+  	constructor(_width: Int, _height: Double) {
+        width = _width
+        height = _height.toInt()
+    }
+}
+
+val size1 = Size(3, 4)
+```
+
+如果创建了带参数的构造函数，那么默认无参构造函数将不会被自动创建，需要自己手动创建
+
+```kotlin
+class Size {
+    var width: Int = 0
+    var height: Int = 0
+
+    constructor() {
+    }
+  	// 等价于 constructor()
+}
+```
+
+如果构造函数中赋值了 `val` 的变量，那么不需要为类属性设置默认值
+
+```kotlin
+class Size {
+    val width: Int
+    val height: Int
+    val area: Int
+
+    constructor(width: Int, height: Int) {
+        this.width = width
+        this.height = height
+        this.area = width * height
+    }
+}
+```
+
+#### 委托
+
+`委托`就是一个构造函数调用另一个构造函数或者主构造函数
+
+`this` 关键字放在构造函数后面即可调用另外的构造函数
+
+```kotlin
+class Size(val width: Int, val height: Int) {
+    var area: Int = width * height
+
+    init {
+        println("Object with area equal to $area is created")
+    }
+
+    constructor(width: Int, height: Int, outerSize: Size) : this(width, height) {
+        outerSize.area -= this.area
+        println("Updated outer object's area is equal to ${outerSize.area}")
+    }
+}
+```
+
+此时，将先执行主构造函数和初始化代码块，然后再执行当前构造函数
+
+如果类没有**主构造函数**，则`委托`将会瘾式的发生，然后执行`初始化代码块`，最后执行当前`次要构造函数`
+
+### Data class
+
+使用 `data` 关键字定义 `数据类` 
+
+`Kotlin` 会给 `数据类`会自动创建下面函数：`equals()`、`hashCode()` 、 `toString()` 、 `copy()`
+
+```kotlin
+data class Client(val name: String, val age: Int, val gender: String)
+```
+
+数据类规则：
+
+1. 所有在`构造函数` 里面的`属性`才有用
+
+   ```kotlin
+   data class Client(val name: String, val age: Int, val gender: String) {
+       var balance: Int = 0
+   }
+   ```
+
+   这里的 `balance` 字段将不受 `data` 关键字影响，即自动创建的函数里面不会有 `balance` 属性，例如：`equals()` 函数在比较大的时候，不会比较 `balance` 属性的值
+
+2. 可以重写除`copy()`之外的所有自动创建的函数
+
+3. `数据类`的`主构造函数`必须至少具有一个参数，并且所有这些参数必须为`val`或`var`
+
+#### 重写`equals()` 函数
+
+```kotlin
+class Client(val name: String, val age: Int, val gender: String) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Client
+
+        if (name != other.name) return false
+        if (age != other.age) return false
+        if (gender != other.gender) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = name.hashCode()
+        result = 31 * result + age
+        result = 31 * result + gender.hashCode()
+        return result
+    }
+}
+```
+
+### 解构分解 - Destructuring declarations
+
+`Destructuring declarations` 可一次性将类中的一个或者多个属性解析出来
+
+#### data class 解构
+
+```kotlin
+data class User(val name: String, val age: Int, val isAdmin: Boolean)
+val anonim = User("Anonim", 999, false)
+
+val (userName, userAge, isAdmin) = anonim
+println(userName)  // prints Anonim
+println(userAge)   // prints 999
+println(isAdmin)   // prints false
+
+val (userName, userAge) = anonim
+```
+
+解构使用的`componentN()` 运算符，该运算符从类中返回第n个元素。上面的代码被编译成以下代码
+
+```kotlin
+val userName = anonim.component1()
+val userAge = anonim.component2()
+val isAdmin = anonim.component3()
+```
+
+#### 普通类解构分解
+
+只需要手动实现 `componentN()` 运算符即可
+
+```kotlin
+class User(val name: String, val age: Int, val isAdmin: Boolean){
+    operator fun component1(): String = name
+    operator fun component2(): Int = age
+    operator fun component3(): Boolean = isAdmin
+}
+
+// now we can use default destructuring syntax
+fun checkIsAdmin(suspiciousUser: User) {
+    // desctructuring
+    val (name, age, isAdmin) = suspiciousUser
+
+    if (isAdmin)
+        println("Have a nice day!")
+    else
+        println("Sorry, you should not be here.")
+}
+```
+
+#### 数组和循环使用解构分解
+
+数组和循环也可使用解构分解，下面将提取数组中的前3个元素的值
+
+```kotlin
+val numbers = intArrayOf(1, 2, 3, 4, 5)
+val (firstName, lastName, city) = numbers
+```
+
+如果数组中的元素少于3个，那么程序将会崩溃
+
+```kotlin
+fun processAnalytics(usersData: Array<User>) {
+    for ((name, age, isAdmin) in usersData) {
+        if (!isAdmin)
+            sendAnalyticsToCompany(name, age)
+    }
+}
+```
+
+#### 忽略不用的变量
+
+在解构分解的时候，如果某个变量不需要接收，则可使用 `_` 不接收该变量
+
+```kotlin
+val usersData = arrayOf<User>()
+for ((_, _, isAdmin) in usersData) {
+    // /~
+}
+```
+
+## 异常
+
+`exception` ：程序运行时发生的错误
+
+技术上来说，异常可以在引起异常的地方或者调用的任何地方处理
+
+处理异常的最佳方法是: **在具有足够信息的方法中处理异常，以便根据此异常做出正确的决策** 
+
+### 异常处理
+
+#### 扔出异常
+
+`throw` 关键字扔出异常
+
+```kotlin
+throw Exception("Total can't be negative")
+```
+
+### try-catch语句
+
+```kotlin
+try {
+    // code that throws exceptions
+} catch (e: IOException) {
+    // handling the IOException and its subtypes   
+} catch (e: Exception) {
+    // handling the Exception and its subtypes
+}
+```
+
+`try-catch` 语句执行流程
+
+```kotlin
+println("Before the try-catch block") // it will be printed
+try {
+    println("Inside the try block before an exception") // it will be printed
+    println(2 / 0) // it throws ArithmeticException
+    println("Inside the try block after the exception") // it won't be printed
+} catch (e: ArithmeticException) {
+    println("Division by zero!") // it will be printed
+}
+
+println("After the try-catch block") // it will be printed
+```
+
+### Null safe 空指针安全
+
+`Kotlin`中有两种类型的引用：可空引用`nullable`和不可空引用`non-nullable`
+
+#### 安全调用
+
+在可空引用后面加上 `?` 号即可安全调用，`?` 号会将前面的引用和 `null` 进行比较，如果该引用为`null`则返回 `null`
+
+```kotlin
+print(city?.address?.street?.building?.name)
+```
+
+所以下面的两行代码是等价的
+
+```kotlin
+city?.address
+(if (city == null) null else city.address)
+```
+
+#### ?: 操作符 - Elvis Operator
+
+如果`?:`表达式左边的值不是 `null` 则返回它，否则返回表达式右侧的值
+
+```kotlin
+var name: String? = "Kotlin"
+val length: Int? = name?.length
+print(length ?: 0)
+
+val length: Int = name?.length ?: throw Exception("The name is null")
+```
+
+#### !! 操作符
+
+`!!` 操作符用于在遇到 `null` 时终止程序
+
+```kotlin
+var name: String? = "Kotlin"
+print(name!!.length)
+
+readLine()!!
+```
 
 ## 函数
 
@@ -1861,6 +2944,87 @@ val string = scanner.next()   // read a string, i.e. "Hello" 读取一个单词
 ```
 
 **System.\`in\`** 是标准输入流对象。`scanner`包装它作为内部数据源并提供一组方便的方法
+
+## 文件操作
+
+`Kotlin` 中默认的字符集是 `UTF-8` 
+
+### 读文件
+
+#### readText
+
+`readText()`将一个文件一次性读取并以字符串形式返回
+
+```kotlin
+val fileName = "src/reading.txt"
+val lines = File(fileName).readText()
+print(lines)
+
+// 指定字符集
+val line = File(fileName).readText(Charsets.US_ASCII)
+```
+
+#### readLines
+
+`readLines()`读取文件的每一行并将其存储在`List` 中（一次读取整个文件）
+
+```kotlin
+val fileName = "src/reading.txt"
+val lines = File(fileName).readLines()
+for (line in lines){
+    println(line)
+} 
+```
+
+#### readBytes
+
+`readBytes()`将文件内容存储为字节数组（一次读取整个文件）
+
+```kotlin
+val lines = File(fileName).readBytes()
+```
+
+#### forEachLine
+
+大文件推荐使用`forEachLine`，该方法会一行一行读取文件
+
+```kotlin
+val fileName = "src/reading.txt"
+File(fileName).forEachLine { println(it) }
+```
+
+### 写文件
+
+#### writeText
+
+`writeText` 方法会清空源文件中的内容然后再写入，如果文件不存在则会自动创建
+
+```kotlin
+val myFile = File("MyFile.txt") //file name must be indicated in parentheses 
+myFile.writeText("It is awfully hard work doing nothing!")
+```
+
+#### appendText
+
+`appendText` 将内容追加到文件末尾，如果文件不存在则会自动创建
+
+```kotlin
+val fileName = "myFile.txt"
+val myFile = File(fileName).appendText(", Donald E. Knuth said.")
+println(File(fileName).readText()) //prints the content of the file
+```
+
+## 异步
+
+### 协程 - coroutine
+
+协程是一段可以**暂停**和**恢复**的代码，如果该代码处于等待状态我们就认为他`挂起` 
+
+
+
+
+
+
 
 ## 标准库
 
