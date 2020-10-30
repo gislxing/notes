@@ -287,6 +287,18 @@ dependencies {
 }
 ```
 
+## 国内镜像
+
+修改`build.gradle` 文件中添加`aliyun`镜像
+
+```kotlin
+repositories {
+    // 添加aliyun镜像
+    maven(url = "http://maven.aliyun.com/nexus/content/groups/public/")
+    mavenCentral()
+}
+```
+
 
 
 

@@ -910,6 +910,14 @@ println(300 in range) // false
 
 成员函数(member functions)：绑定到具体类型上的函数，这些被绑定的函数就代表了对象的行为
 
+### 相等性
+
+`==` 运算符：比较两个基本类型（包含字符串）的属性值是否相等，如果是对象则会调用`equals()`方法进行比较
+
+`===`运算符：检查变量是否指向同一对象
+
+`!==`运算符：检查变量是否指向不同对象
+
 ### 数组 array
 
 数组是同一类型元素的集合，所有元素按顺序存储在内存中
@@ -1419,6 +1427,14 @@ for (i in 1..4) {
 
 for (ch in 'a'..'c') {
     println(ch)
+}
+```
+
+#### 带索引循环
+
+```kotlin
+for ((index, e) in array.withIndex()){
+  println("下标=$index----元素=$e")
 }
 ```
 
@@ -2122,7 +2138,7 @@ class Player(val id: Int) {
 println(Player.Properties.defaultSpeed)
 ```
 
-### Companion object 伴生对象
+### Companion object 伴生 object
 
 `companion object 伴生对象` 适用于存储一个公共属性并且需要在类内部定义
 
